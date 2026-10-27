@@ -1,5 +1,8 @@
 // Bundles the HUD into a single IIFE so the Playwright isolation suite can
-// inject it into a real browser page. Output is generated and git-ignored.
+// inject it into a real browser page. The entry file installs the harness on
+// `globalThis`; no `globalName` is used because esbuild would then emit
+// `var VfeHudHarness = <module exports>` and clobber that object (the entry has
+// no exports). Output is generated and git-ignored.
 import { mkdirSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -15,7 +18,6 @@ await build({
   outfile,
   bundle: true,
   format: 'iife',
-  globalName: 'VfeHudHarness',
   target: 'es2022',
   sourcemap: false,
   logLevel: 'info',

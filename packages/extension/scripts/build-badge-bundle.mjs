@@ -1,4 +1,6 @@
-// Bundles the badge overlay for the Playwright isolation suite.
+// Bundles the badge overlay for the Playwright isolation suite. The entry file
+// installs the harness on `globalThis`, so no `globalName` (which would clobber
+// it with the entry's empty export object).
 import { mkdirSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -14,7 +16,6 @@ await build({
   outfile,
   bundle: true,
   format: 'iife',
-  globalName: 'VfeBadgeHarness',
   target: 'es2022',
   sourcemap: false,
   logLevel: 'info',
