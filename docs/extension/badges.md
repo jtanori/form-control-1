@@ -64,10 +64,11 @@ cancels any pending frame.
 
 - **scroll-listener** (default): the listener set above; correct for any page
   that scrolls, including `body { overflow: hidden }` scroll jails.
-- **no-listener**: for pages that never scroll (typical SPA shells) a single
-  mount-time pass is enough; badges still follow `sync()`, focus and transition
-  events. The mode is chosen at mount by checking whether the document is
-  taller than the viewport.
+- **no-listener**: for pages that never scroll (typical SPA shells). The mode is
+  chosen at mount by comparing `scrollingElement.scrollHeight` with the viewport
+  and is observable through `controller.getMode()`. A 1000 ms poll replaces the
+  scroll trigger, because such pages still move under accordions, sheets and
+  re-renders.
 
 Neither mode re-creates badge nodes: nodes are created once per `vfeId` and
 mutated afterwards. Re-creating nodes on every frame is the classic way to miss

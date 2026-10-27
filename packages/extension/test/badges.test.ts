@@ -231,6 +231,40 @@ describe('positioning', () => {
   });
 });
 
+describe('modes', () => {
+  it('chooses no-listener mode for a page that cannot scroll', () => {
+    const controller = mountBadges();
+    expect(controller.getMode()).toBe('no-listener');
+  });
+
+  it('polls once a second in no-listener mode', async () => {
+    const controller = mountBadges();
+    control('vfe_1', { top: 100, left: 10, width: 100, height: 30 });
+    controller.sync(state([element(1)]));
+    controller.reposition();
+    const before = badges()[0]?.style.transform;
+
+    // No scroll event, no resize: only the poll can move the badge.
+    const input = document.querySelector('[data-vfe-id="vfe_1"]') as HTMLElement;
+    Object.defineProperty(input, 'getBoundingClientRect', {
+      configurable: true,
+      value: () => ({
+        top: 300,
+        bottom: 330,
+        left: 10,
+        right: 110,
+        width: 100,
+        height: 30,
+        x: 10,
+        y: 300,
+        toJSON: () => ({}),
+      }),
+    });
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(badges()[0]?.style.transform).not.toBe(before);
+  });
+});
+
 describe('flash', () => {
   it('marks a badge active then restores it', async () => {
     const controller = mountBadges();

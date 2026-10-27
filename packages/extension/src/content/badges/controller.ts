@@ -6,6 +6,8 @@ import { createScheduler, type Scheduler } from './scheduler';
 
 export type BadgeResult = 'ok' | 'error';
 
+export type BadgeMode = 'scroll-listener' | 'no-listener';
+
 export interface BadgeController {
   /** Replace the badge set from a distilled page state. */
   sync: (pageState: PageState) => void;
@@ -16,6 +18,8 @@ export interface BadgeController {
   /** Force one reposition pass now (tests, tab visibility). */
   reposition: () => void;
   destroy: () => void;
+  /** Which repositioning strategy this instance chose at mount. */
+  getMode: () => BadgeMode;
   /** Test-only counters proving the read/write split. */
   debugStats: () => { reads: number; writes: number };
 }
@@ -26,7 +30,8 @@ export interface BadgeControllerOptions {
   /** Hard cap; matches A-1's `maxElements`. */
   maxBadges?: number;
   flashMs?: number;
-  now?: () => number;
+  /** `auto` picks `no-listener` for pages that cannot scroll (SPA shells). */
+  mode?: BadgeMode | 'auto';
 }
 
 interface BadgeNode {
@@ -214,6 +219,21 @@ export function createBadgeController(options: BadgeControllerOptions): BadgeCon
   };
 
   const view = doc.defaultView;
+  const canScroll = (): boolean => {
+    const scrolling = doc.scrollingElement ?? doc.documentElement;
+    if (!scrolling) return true;
+    return scrolling.scrollHeight > (view?.innerHeight ?? 0) + 1;
+  };
+  const mode: BadgeMode =
+    options.mode && options.mode !== 'auto'
+      ? options.mode
+      : canScroll()
+        ? 'scroll-listener'
+        : 'no-listener';
+
+  // A page that cannot scroll still moves: accordions, sheets and re-renders.
+  const poll = mode === 'no-listener' ? setInterval(() => schedule(), 1000) : null;
+
   view?.addEventListener('scroll', schedule, {
     passive: true,
     capture: true,
@@ -242,11 +262,13 @@ export function createBadgeController(options: BadgeControllerOptions): BadgeCon
       destroyed = true;
       abort.abort();
       scheduler.cancel();
+      if (poll) clearInterval(poll);
       for (const timer of flashTimers.values()) clearTimeout(timer);
       flashTimers.clear();
       for (const entry of entries.values()) entry.node.remove();
       entries.clear();
     },
+    getMode: () => mode,
     debugStats: () => ({ ...stats }),
   };
 }
