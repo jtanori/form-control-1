@@ -24,6 +24,29 @@ export type { LabelSource, ResolvedContext } from './eyes/labels';
 export { clearContextCache, labelOf, resolveContext } from './eyes/labels';
 export { mapType, readOptions, readValue } from './eyes/serialize';
 export { containsControl, hasRequiredMarker, isTextVisible, normaliseLabel } from './eyes/text';
+export type { ControlOptions, OptionLike, OptionMatch } from './hands/controls';
+export {
+  clickElement,
+  focusElement,
+  matchOption,
+  scrollPage,
+  selectOption,
+  setChecked,
+} from './hands/controls';
+export {
+  activeElementAcrossRoots,
+  isElementDisabled,
+  isInViewport,
+  setNativeChecked,
+  setNativeValue,
+  withElement,
+} from './hands/element';
+export type { ExecuteOptions, ExecutionReport } from './hands/execute';
+export { executeActions } from './hands/execute';
+export type { FillOptions } from './hands/fill';
+export { clearValue, fillValue } from './hands/fill';
+export type { Normalised } from './hands/normalise';
+export { normaliseForElement, normaliseValue } from './hands/normalise';
 export type {
   DebugInfo,
   DiscoveredElement,

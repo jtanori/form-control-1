@@ -102,6 +102,30 @@ watcher.start();
 watcher.stop();
 ```
 
+## How the Hands work (B-1/B-2/B-3)
+
+`executeActions(Action[])` runs a batch sequentially and returns a typed report.
+Individual handlers are exported for direct use: `fillValue`, `clearValue`,
+`selectOption`, `setChecked`, `clickElement`, `focusElement`, `scrollPage`.
+
+- **Framework bypass:** values go through the prototype setter plus the full
+  `beforeinput → keydown → input → keyup → change → blur` sequence, so React
+  `onChange`, Vue `v-model`, Svelte bindings and Angular `ngModel` see a real
+  edit. See [`docs/dom-engine/framework-compat.md`](../../docs/dom-engine/framework-compat.md).
+- **Option matching:** a seven-step waterfall (value → label → normalised →
+  acronym → prefix → substring → Levenshtein ≤ 2) that never guesses between
+  ambiguous candidates; failures carry the available options so the Brain can
+  retry.
+- **Clicks are pointer sequences**, not `.click()`, because Radix/Headless UI
+  listen on `pointerdown`.
+- **Hidden native checkboxes** are clicked through their visible label proxy.
+- **Post-conditions:** every handler re-reads the DOM and returns
+  `VALUE_MISMATCH` instead of a false success.
+- **Queue semantics:** late resolution, transient-only retries, per-action
+  timeouts, `AbortSignal`, submit-click navigation guard, and a mutex that
+  serialises concurrent batches. See
+  [`docs/dom-engine/execution-semantics.md`](../../docs/dom-engine/execution-semantics.md).
+
 ## Testing
 
 - Unit: `pnpm --filter @vfe/dom-engine test` (jsdom + `mockLayout` — jsdom has
