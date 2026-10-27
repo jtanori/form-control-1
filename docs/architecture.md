@@ -2,7 +2,7 @@
 
 > Status: MVP (Phase 0–3) · Protocol version `1.0.0` · Owner: Lead Architect
 
-This document holds the architectural decisions that the backlog depends on. Each ADR is short on purpose: the *why* matters more than the *how* (the *how* lives in the tickets).
+This document holds the architectural decisions that the backlog depends on. Each ADR is short on purpose: the _why_ matters more than the _how_ (the _how_ lives in the tickets).
 
 ---
 
@@ -61,7 +61,7 @@ This document holds the architectural decisions that the backlog depends on. Eac
 
 **Decision.** `@vfe/protocol` is written **first** and frozen; all tracks import types from it. Schemas are plain zod object schemas (no `transform`, `preprocess`, `coerce` on wire types) so they can be converted to JSON Schema for OpenAI Structured Outputs.
 
-**Why.** The LLM's output must be *the* `ActionSchema`. Deriving the model's response format from the same schema that the executor validates eliminates an entire class of "the model said something we can't execute" bugs.
+**Why.** The LLM's output must be _the_ `ActionSchema`. Deriving the model's response format from the same schema that the executor validates eliminates an entire class of "the model said something we can't execute" bugs.
 
 **Consequences.** zod stays on v3 (v4 changes the OpenAI helper contract). Any transform-shaped normalisation happens in the Brain, never in the schema.
 
@@ -81,7 +81,7 @@ This document holds the architectural decisions that the backlog depends on. Eac
 
 **Decision.** Microphone access lives in a `chrome.offscreen` document (`USER_MEDIA` reason), not in the content script and never in the service worker (which has no `navigator.mediaDevices`).
 
-**Why.** A content-script mic grant is bound to the *page's origin* — a permission prompt on every site. The extension origin grants once, for every tab. The service worker cannot hold a stream at all.
+**Why.** A content-script mic grant is bound to the _page's origin_ — a permission prompt on every site. The extension origin grants once, for every tab. The service worker cannot hold a stream at all.
 
 **Consequences.** Offscreen document lifecycle must be managed (single-flight creation, idle close). Audio never leaves memory except as a WAV upload through the edge proxy.
 
@@ -149,14 +149,14 @@ This document holds the architectural decisions that the backlog depends on. Eac
 
 ## Threat model (MVP)
 
-| Threat | Mitigation |
-| --- | --- |
+| Threat                                                                                   | Mitigation                                                                                                                                                                                                                          |
+| ---------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Prompt injection from page content (a page contains text "ignore previous instructions") | The model only sees serialised, structured field data (labels/placeholders truncated); `targetId` is validated server-side; the model cannot pick arbitrary selectors. Backlog: strip instruction-like text from labels (post-MVP). |
-| Exfiltration of form data | Only the distilled `PageState` leaves the page, and password values are redacted in A-3. No full DOM dumps, no keystroke logging. |
-| Credential theft from the extension bundle | ADR-005: no keys in the extension. |
-| Malicious site fingerprinting the extension | `data-vfe-*` attributes are visible to the page by design (the DOM engine needs them); document it. Optional randomisation is a Phase-2 hardening item. |
-| Automatic actions on destructive buttons | The Brain may only `CLICK` a target that exists in the page state; submit-clicks are gated by user intent in the prompt and by INT-2's attempt cap. |
-| Audio retention | In-memory only; never persisted (D-1 privacy requirements). |
+| Exfiltration of form data                                                                | Only the distilled `PageState` leaves the page, and password values are redacted in A-3. No full DOM dumps, no keystroke logging.                                                                                                   |
+| Credential theft from the extension bundle                                               | ADR-005: no keys in the extension.                                                                                                                                                                                                  |
+| Malicious site fingerprinting the extension                                              | `data-vfe-*` attributes are visible to the page by design (the DOM engine needs them); document it. Optional randomisation is a Phase-2 hardening item.                                                                             |
+| Automatic actions on destructive buttons                                                 | The Brain may only `CLICK` a target that exists in the page state; submit-clicks are gated by user intent in the prompt and by INT-2's attempt cap.                                                                                 |
+| Audio retention                                                                          | In-memory only; never persisted (D-1 privacy requirements).                                                                                                                                                                         |
 
 ---
 

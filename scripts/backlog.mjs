@@ -24,10 +24,30 @@ const BACKLOG_MD = join(ROOT, 'BACKLOG.md');
 const ISSUE_DIR = join(ROOT, 'docs', 'backlog', 'issues');
 
 const PHASE_META = {
-  0: { key: 'phase-0', title: 'Phase 0 — Foundation & Universal Contract', short: 'Foundation (sequential)', desc: 'Blocks every other track. Lock the monorepo and the protocol.' },
-  1: { key: 'phase-1', title: 'Phase 1 — Parallel Component Tracks', short: 'Tracks A–E (parallel)', desc: 'Five independent tracks coding against the frozen protocol.' },
-  2: { key: 'phase-2', title: 'Phase 2 — System Integration & Orchestration', short: 'Integration (sequential)', desc: 'Wire the pillars into one voice-to-form loop.' },
-  3: { key: 'phase-3', title: 'Phase 3 — QA & Synthetic Torture Testbed', short: 'QA (starts early)', desc: 'Hostile forms that prove the engine is universal.' },
+  0: {
+    key: 'phase-0',
+    title: 'Phase 0 — Foundation & Universal Contract',
+    short: 'Foundation (sequential)',
+    desc: 'Blocks every other track. Lock the monorepo and the protocol.',
+  },
+  1: {
+    key: 'phase-1',
+    title: 'Phase 1 — Parallel Component Tracks',
+    short: 'Tracks A–E (parallel)',
+    desc: 'Five independent tracks coding against the frozen protocol.',
+  },
+  2: {
+    key: 'phase-2',
+    title: 'Phase 2 — System Integration & Orchestration',
+    short: 'Integration (sequential)',
+    desc: 'Wire the pillars into one voice-to-form loop.',
+  },
+  3: {
+    key: 'phase-3',
+    title: 'Phase 3 — QA & Synthetic Torture Testbed',
+    short: 'QA (starts early)',
+    desc: 'Hostile forms that prove the engine is universal.',
+  },
 };
 
 const TRACK_META = {
@@ -75,7 +95,8 @@ const LABEL_DESCRIPTIONS = {
   'area:e2e': 'Playwright end-to-end suites',
   'area:integration': 'Wiring across packages',
   'area:tooling': 'Monorepo, build, CI',
-  'agent-ready': 'Fully specified: algorithms, acceptance criteria, test plan — safe to hand to a coding agent',
+  'agent-ready':
+    'Fully specified: algorithms, acceptance criteria, test plan — safe to hand to a coding agent',
   backlog: 'Part of the MVP backlog (auto-applied by scripts/backlog.mjs)',
 };
 
@@ -162,7 +183,9 @@ function loadTickets() {
     const ga = a.meta.id.replace(/[-_]\d+$/, '');
     const gb = b.meta.id.replace(/[-_]\d+$/, '');
     if (ga !== gb) return ga.localeCompare(gb);
-    return Number(a.meta.id.match(/(\d+)$/)?.[1] ?? 0) - Number(b.meta.id.match(/(\d+)$/)?.[1] ?? 0);
+    return (
+      Number(a.meta.id.match(/(\d+)$/)?.[1] ?? 0) - Number(b.meta.id.match(/(\d+)$/)?.[1] ?? 0)
+    );
   });
   return tickets;
 }
@@ -218,9 +241,7 @@ function metadataBlock(t, { form = 'body' } = {}) {
     blocks: t.meta.blocks ?? [],
     githubIssue: t.meta.github_issue ?? null,
   };
-  const lines = [
-    `<!-- vfe:metadata v1 ${t.meta.id} -->`,
-  ];
+  const lines = [`<!-- vfe:metadata v1 ${t.meta.id} -->`];
   if (form === 'comment') {
     lines.push(`### 🏷️ Backlog metadata — \`${t.meta.id}\``, '');
     lines.push(
@@ -310,10 +331,14 @@ let cachedSlug = null;
 function repoSlug() {
   if (cachedSlug) return cachedSlug;
   try {
-    cachedSlug = execFileSync('gh', ['repo', 'view', '--json', 'nameWithOwner', '-q', '.nameWithOwner'], {
-      cwd: ROOT,
-      encoding: 'utf8',
-    }).trim();
+    cachedSlug = execFileSync(
+      'gh',
+      ['repo', 'view', '--json', 'nameWithOwner', '-q', '.nameWithOwner'],
+      {
+        cwd: ROOT,
+        encoding: 'utf8',
+      },
+    ).trim();
   } catch {
     cachedSlug = process.env.GITHUB_REPOSITORY || 'OWNER/REPO';
   }
@@ -342,8 +367,12 @@ function buildIndex(tickets) {
   for (const t of tickets) {
     const phase = PHASE_META[t.meta.phase];
     const track = TRACK_META[t.meta.track] ?? { label: t.meta.track, emoji: '•' };
-    const issue = t.meta.github_issue ? `[#${t.meta.github_issue}](https://github.com/${repoSlug()}/issues/${t.meta.github_issue})` : '—';
-    const deps = t.meta.blocked_by.length ? t.meta.blocked_by.map((d) => `\`${d}\``).join(', ') : '—';
+    const issue = t.meta.github_issue
+      ? `[#${t.meta.github_issue}](https://github.com/${repoSlug()}/issues/${t.meta.github_issue})`
+      : '—';
+    const deps = t.meta.blocked_by.length
+      ? t.meta.blocked_by.map((d) => `\`${d}\``).join(', ')
+      : '—';
     out.push(
       `| ${phase.key} | ${track.emoji} ${track.label} | **[\`${t.meta.id}\`](tickets/${t.meta.id}.md)** ${escapePipes(t.meta.title)} | ${t.meta.estimate_hours}h | ${t.meta.priority} | ${deps} | ${issue} |`,
     );
@@ -390,11 +419,21 @@ function buildIndex(tickets) {
   }
   out.push('## Conventions');
   out.push('');
-  out.push('- Branch per ticket: `feat/<ticket-id>-<slug>` (e.g. `feat/b-1-value-injector`). PR title: `[B-1] Value injector`.');
-  out.push('- Every ticket is **agent-ready**: exact algorithms, acceptance criteria, test plan, non-goals.');
-  out.push('- Definition of Ready: dependencies merged, protocol contract unchanged, fixtures exist.');
-  out.push('- Definition of Done: acceptance criteria checked + tests green + docs updated + issue closed by the PR (`Closes #N`).');
-  out.push('- Cross-track changes to `@vfe/protocol` are **additive only** (see `docs/architecture.md` → ADR-010).');
+  out.push(
+    '- Branch per ticket: `feat/<ticket-id>-<slug>` (e.g. `feat/b-1-value-injector`). PR title: `[B-1] Value injector`.',
+  );
+  out.push(
+    '- Every ticket is **agent-ready**: exact algorithms, acceptance criteria, test plan, non-goals.',
+  );
+  out.push(
+    '- Definition of Ready: dependencies merged, protocol contract unchanged, fixtures exist.',
+  );
+  out.push(
+    '- Definition of Done: acceptance criteria checked + tests green + docs updated + issue closed by the PR (`Closes #N`).',
+  );
+  out.push(
+    '- Cross-track changes to `@vfe/protocol` are **additive only** (see `docs/architecture.md` → ADR-010).',
+  );
   out.push('');
   return out.join('\n');
 }
@@ -420,7 +459,9 @@ function gh(args, { json = false, input, allowFail = false } = {}) {
     return res.trim() ? JSON.parse(res) : null;
   } catch (e) {
     if (!allowFail) throw e;
-    const msg = String(e.stderr ?? e.message ?? '').trim().split('\n')[0];
+    const msg = String(e.stderr ?? e.message ?? '')
+      .trim()
+      .split('\n')[0];
     return { __error: msg };
   }
 }
@@ -436,7 +477,9 @@ function ensureLabel(name) {
   const color = LABEL_COLORS[name] ?? 'ededed';
   const res = gh(['label', 'create', name, '--color', color, '--force'], { allowFail: true });
   if (res && res.__error) {
-    warn(`cannot create label "${name}" (${res.__error}) — token lacks permission; metadata stays in issue bodies`);
+    warn(
+      `cannot create label "${name}" (${res.__error}) — token lacks permission; metadata stays in issue bodies`,
+    );
     return 'failed';
   }
   return 'created';
@@ -454,7 +497,16 @@ function ensureMilestone(title, description) {
   const found = (list ?? []).find((m) => m.title === title);
   if (found) return found.number;
   const created = gh(
-    ['api', `repos/${repoSlug()}/milestones`, '-f', `title=${title}`, '-f', `description=${description}`, '-f', 'state=open'],
+    [
+      'api',
+      `repos/${repoSlug()}/milestones`,
+      '-f',
+      `title=${title}`,
+      '-f',
+      `description=${description}`,
+      '-f',
+      'state=open',
+    ],
     { json: true, allowFail: true },
   );
   if (created?.__error) {
@@ -466,7 +518,12 @@ function ensureMilestone(title, description) {
 
 function existingIssues() {
   const res = gh(
-    ['api', `repos/${repoSlug()}/issues?state=all&per_page=100`, '-H', 'Accept: application/vnd.github+json'],
+    [
+      'api',
+      `repos/${repoSlug()}/issues?state=all&per_page=100`,
+      '-H',
+      'Accept: application/vnd.github+json',
+    ],
     { json: true, allowFail: true },
   );
   if (res?.__error) {
@@ -485,11 +542,14 @@ function createOrUpdateIssue(t, body, labels, milestoneNumber, knownIssues) {
       ...(labels.length ? { labels } : {}),
       ...(milestoneNumber ? { milestone: milestoneNumber } : {}),
     });
-    const res = gh(['api', '--method', 'PATCH', `repos/${repoSlug()}/issues/${found.number}`, '--input', '-'], {
-      json: true,
-      input: payload,
-      allowFail: true,
-    });
+    const res = gh(
+      ['api', '--method', 'PATCH', `repos/${repoSlug()}/issues/${found.number}`, '--input', '-'],
+      {
+        json: true,
+        input: payload,
+        allowFail: true,
+      },
+    );
     if (res?.__error) {
       warn(
         'token cannot update existing issues (403) — issue bodies are not refreshed, only missing issues are created',
@@ -534,7 +594,11 @@ function backlogJson(tickets) {
     generatedAt: new Date().toISOString(),
     repository: repoSlug(),
     ticketCount: tickets.length,
-    milestones: Object.values(PHASE_META).map((p) => ({ key: p.key, title: p.title, description: p.desc })),
+    milestones: Object.values(PHASE_META).map((p) => ({
+      key: p.key,
+      title: p.title,
+      description: p.desc,
+    })),
     labelDefinitions: Object.fromEntries(
       [...new Set(tickets.flatMap((t) => [...t.meta.labels, 'backlog']))]
         .sort()
@@ -565,10 +629,16 @@ function cmdBuild() {
   const tickets = loadTickets();
   mkdirSync(ISSUE_DIR, { recursive: true });
   writeFileSync(BACKLOG_MD, buildIndex(tickets) + '\n');
-  writeFileSync(join(ROOT, 'docs', 'backlog', 'backlog.json'), JSON.stringify(backlogJson(tickets), null, 2) + '\n');
+  writeFileSync(
+    join(ROOT, 'docs', 'backlog', 'backlog.json'),
+    JSON.stringify(backlogJson(tickets), null, 2) + '\n',
+  );
   for (const t of tickets) {
     writeFileSync(join(ISSUE_DIR, `${t.meta.id}.md`), issueBody(t, tickets) + '\n');
-    writeFileSync(join(ISSUE_DIR, `${t.meta.id}.comment.md`), metadataBlock(t, { form: 'comment' }) + '\n');
+    writeFileSync(
+      join(ISSUE_DIR, `${t.meta.id}.comment.md`),
+      metadataBlock(t, { form: 'comment' }) + '\n',
+    );
   }
   console.log(
     `BACKLOG.md + docs/backlog/backlog.json + docs/backlog/issues/*.md (+ .comment.md) written (${tickets.length} tickets)`,
@@ -582,20 +652,31 @@ function cmdBuild() {
  */
 function cmdAnnotate({ apply }) {
   const tickets = loadTickets().filter((t) => t.meta.github_issue);
-  console.log(`${apply ? 'ANNOTATE' : 'DRY RUN'} against ${repoSlug()} — ${tickets.length} linked tickets\n`);
+  console.log(
+    `${apply ? 'ANNOTATE' : 'DRY RUN'} against ${repoSlug()} — ${tickets.length} linked tickets\n`,
+  );
   let posted = 0;
   let skipped = 0;
   let failed = 0;
   for (const t of tickets) {
     const marker = `<!-- vfe:metadata v1 ${t.meta.id} -->`;
     if (!apply) {
-      console.log(`[${t.meta.id}] would comment on #${t.meta.github_issue} (${t.meta.labels.length + 1} labels, ${PHASE_META[t.meta.phase].title})`);
+      console.log(
+        `[${t.meta.id}] would comment on #${t.meta.github_issue} (${t.meta.labels.length + 1} labels, ${PHASE_META[t.meta.phase].title})`,
+      );
       continue;
     }
-    const comments = gh(['api', `repos/${repoSlug()}/issues/${t.meta.github_issue}/comments?per_page=100`, '--paginate'], {
-      json: true,
-      allowFail: true,
-    });
+    const comments = gh(
+      [
+        'api',
+        `repos/${repoSlug()}/issues/${t.meta.github_issue}/comments?per_page=100`,
+        '--paginate',
+      ],
+      {
+        json: true,
+        allowFail: true,
+      },
+    );
     if (comments?.__error) {
       warn(`cannot read comments (${comments.__error})`);
       failed++;
@@ -606,8 +687,19 @@ function cmdAnnotate({ apply }) {
       continue;
     }
     const res = gh(
-      ['api', '--method', 'POST', `repos/${repoSlug()}/issues/${t.meta.github_issue}/comments`, '--input', '-'],
-      { json: true, input: JSON.stringify({ body: metadataBlock(t, { form: 'comment' }) }), allowFail: true },
+      [
+        'api',
+        '--method',
+        'POST',
+        `repos/${repoSlug()}/issues/${t.meta.github_issue}/comments`,
+        '--input',
+        '-',
+      ],
+      {
+        json: true,
+        input: JSON.stringify({ body: metadataBlock(t, { form: 'comment' }) }),
+        allowFail: true,
+      },
     );
     if (res?.__error) {
       warn(`cannot comment on #${t.meta.github_issue} (${res.__error})`);
@@ -658,7 +750,8 @@ function cmdSync({ apply }) {
     milestones.set(phase.key, n);
     if (n) console.log(`milestone ${phase.title} → #${n}`);
   }
-  if ([...milestones.values()].every((v) => v === null)) console.log('milestones: SKIPPED (token cannot manage milestones)');
+  if ([...milestones.values()].every((v) => v === null))
+    console.log('milestones: SKIPPED (token cannot manage milestones)');
 
   // 3. issues (topological order so dependencies already have numbers)
   const known = existingIssues();

@@ -1,0 +1,22 @@
+{
+  "name": "@vfe/extension",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "vite build",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "clean": "rm -rf dist .turbo coverage"
+  },
+  "dependencies": {
+    "@ricky0123/vad-web": "^0.0.27",
+    "@vfe/dom-engine": "workspace:*",
+    "@vfe/protocol": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.287",
+    "vite": "^5.4.11"
+  }
+}
