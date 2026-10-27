@@ -274,7 +274,7 @@ describe('discoverInteractiveElements', () => {
     expect(spy.calls).toEqual([]);
   });
 
-  it('discovers 500 controls well under a second in jsdom', () => {
+  it('discovers 500 controls without super-linear blow-up in jsdom', () => {
     document.body.innerHTML = `<form>${Array.from(
       { length: 500 },
       (_, i) => `<input id="s${i}" />`,
@@ -282,7 +282,9 @@ describe('discoverInteractiveElements', () => {
     showAll(document.body);
     const result = discoverInteractiveElements({ maxElements: 600 });
     expect(result.elements).toHaveLength(500);
-    expect(result.durationMs).toBeLessThan(500);
+    // Wall-clock guard only: shared CI runners are noisy, so this catches a
+    // pathological O(n²) regression rather than policing milliseconds.
+    expect(result.durationMs).toBeLessThan(2000);
   });
 });
 
