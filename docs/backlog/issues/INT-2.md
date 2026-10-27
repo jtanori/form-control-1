@@ -12,13 +12,63 @@
 | **Parallel-safe** | ⚠️ no — coordinate merges |
 | **Source** | [`docs/backlog/tickets/INT-2.md`](https://github.com/jtanori/form-control-1/blob/main/docs/backlog/tickets/INT-2.md) |
 
+<!-- vfe:metadata v1 INT-2 -->
+### Metadata (labels & milestone)
+
+**Milestone:** `Phase 2 — System Integration & Orchestration`  
+**Priority:** `p0` · **Type:** `feature` · **Estimate:** `8h (L)` · **Owner:** Lead Architect
+
+| Label | Meaning |
+| --- | --- |
+| `phase:2-integration` | Phase 2 — System integration & orchestration |
+| `track:integration` | Cross-track integration & orchestration |
+| `type:feature` | New user-facing capability |
+| `area:extension` | @vfe/extension — Chrome MV3 client |
+| `area:integration` | Wiring across packages |
+| `priority:p0` | Blocks the MVP release |
+| `agent-ready` | Fully specified: algorithms, acceptance criteria, test plan — safe to hand to a coding agent |
+| `backlog` | Part of the MVP backlog (auto-applied by scripts/backlog.mjs) |
+
+```json
+{
+  "ticket": "INT-2",
+  "title": "Post-Submit Validation & Error Recovery Loop — self-healing forms",
+  "phase": "phase-2",
+  "milestone": "Phase 2 — System Integration & Orchestration",
+  "labels": [
+    "phase:2-integration",
+    "track:integration",
+    "type:feature",
+    "area:extension",
+    "area:integration",
+    "priority:p0",
+    "agent-ready",
+    "backlog"
+  ],
+  "priority": "p0",
+  "type": "feature",
+  "track": "integration",
+  "ownerRole": "Lead Architect",
+  "estimateHours": 8,
+  "estimate": "L",
+  "parallelSafe": false,
+  "blockedBy": [
+    "INT-1"
+  ],
+  "blocks": [
+    "QA-1"
+  ],
+  "githubIssue": 17
+}
+```
+
 ### Dependencies
 
 **Blocked by:**
-- [ ] `INT-1` — Master Control Loop — content script + background orchestrator wiring all five pillars
+- [ ] #16 — Master Control Loop — content script + background orchestrator wiring all five pillars
 
 **Unblocks:**
-- QA-1
+- #18 — Form Torture Testbed — 5 hostile form patterns for E2E proof
 
 ---
 

@@ -1,0 +1,645 @@
+{
+  "generatedAt": "2026-10-27T11:47:26.999Z",
+  "repository": "jtanori/form-control-1",
+  "ticketCount": 18,
+  "milestones": [
+    {
+      "key": "phase-0",
+      "title": "Phase 0 — Foundation & Universal Contract",
+      "description": "Blocks every other track. Lock the monorepo and the protocol."
+    },
+    {
+      "key": "phase-1",
+      "title": "Phase 1 — Parallel Component Tracks",
+      "description": "Five independent tracks coding against the frozen protocol."
+    },
+    {
+      "key": "phase-2",
+      "title": "Phase 2 — System Integration & Orchestration",
+      "description": "Wire the pillars into one voice-to-form loop."
+    },
+    {
+      "key": "phase-3",
+      "title": "Phase 3 — QA & Synthetic Torture Testbed",
+      "description": "Hostile forms that prove the engine is universal."
+    }
+  ],
+  "labelDefinitions": {
+    "agent-ready": "Fully specified: algorithms, acceptance criteria, test plan — safe to hand to a coding agent",
+    "area:a11y": "Accessibility (ARIA, focus management, screen readers)",
+    "area:audio": "Microphone capture, VAD, STT, TTS",
+    "area:brain": "@vfe/brain — LLM service & HTTP API",
+    "area:dom-engine": "@vfe/dom-engine — DOM distillation & action execution",
+    "area:e2e": "Playwright end-to-end suites",
+    "area:extension": "@vfe/extension — Chrome MV3 client",
+    "area:integration": "Wiring across packages",
+    "area:llm": "Prompt engineering, structured outputs, evaluations",
+    "area:performance": "Explicit performance budgets and benchmarks",
+    "area:protocol": "@vfe/protocol — shared zod contract",
+    "area:security": "Secret custody, CORS, prompt-injection surface",
+    "area:testbed": "@vfe/testbed playground",
+    "area:tooling": "Monorepo, build, CI",
+    "area:ui": "HUD, badges, popup UI",
+    "backlog": "Part of the MVP backlog (auto-applied by scripts/backlog.mjs)",
+    "phase:0-foundation": "Phase 0 — Foundation & Universal Contract (sequential, blocks all tracks)",
+    "phase:1-tracks": "Phase 1 — Parallel component tracks (A–E) built against the frozen protocol",
+    "phase:2-integration": "Phase 2 — System integration & orchestration",
+    "phase:3-qa": "Phase 3 — QA & synthetic torture testbed",
+    "priority:p0": "Blocks the MVP release",
+    "priority:p1": "Needed for the MVP, not on the critical path",
+    "track:a-eyes": "Track A — The Eyes: DOM distillation (discovery, labels, page state)",
+    "track:b-hands": "Track B — The Hands: action execution (fill, select, click, queue)",
+    "track:c-brain": "Track C — The Brain: LLM intent service, evals, edge proxy",
+    "track:d-ears": "Track D — The Ears: microphone capture, VAD, STT, TTS",
+    "track:e-hud": "Track E — The HUD: shadow-DOM status pill and number badges",
+    "track:foundation": "Track: monorepo, protocol contract & shared tooling",
+    "track:integration": "Cross-track integration & orchestration",
+    "track:qa": "QA, testbed & end-to-end verification",
+    "type:chore": "Tooling, config or infrastructure work",
+    "type:feature": "New user-facing capability",
+    "type:test": "Test suite / evaluation harness"
+  },
+  "tickets": [
+    {
+      "id": "P0-1",
+      "title": "Monorepo Initialization — pnpm workspaces, Turborepo, shared TS/Vitest/ESLint config",
+      "phase": 0,
+      "milestone": "Phase 0 — Foundation & Universal Contract",
+      "track": "foundation",
+      "type": "chore",
+      "priority": "p0",
+      "estimateHours": 4,
+      "estimate": "M",
+      "ownerRole": "Lead Architect",
+      "labels": [
+        "phase:0-foundation",
+        "track:foundation",
+        "type:chore",
+        "area:tooling",
+        "priority:p0",
+        "agent-ready",
+        "backlog"
+      ],
+      "blockedBy": [],
+      "blocks": [
+        "P0-2",
+        "QA-1"
+      ],
+      "parallelSafe": false,
+      "githubIssue": 1,
+      "source": "docs/backlog/tickets/P0-1.md"
+    },
+    {
+      "id": "P0-2",
+      "title": "Universal Protocol & Zod Schemas — the frozen cross-platform contract",
+      "phase": 0,
+      "milestone": "Phase 0 — Foundation & Universal Contract",
+      "track": "foundation",
+      "type": "feature",
+      "priority": "p0",
+      "estimateHours": 6,
+      "estimate": "M",
+      "ownerRole": "Lead Architect",
+      "labels": [
+        "phase:0-foundation",
+        "track:foundation",
+        "type:feature",
+        "area:protocol",
+        "priority:p0",
+        "agent-ready",
+        "backlog"
+      ],
+      "blockedBy": [
+        "P0-1"
+      ],
+      "blocks": [
+        "A-1",
+        "A-2",
+        "A-3",
+        "B-1",
+        "B-2",
+        "B-3",
+        "C-1",
+        "C-3",
+        "D-1",
+        "E-1",
+        "E-2"
+      ],
+      "parallelSafe": false,
+      "githubIssue": 2,
+      "source": "docs/backlog/tickets/P0-2.md"
+    },
+    {
+      "id": "A-1",
+      "title": "Interactive Element Discovery & Visibility Filtering (deep DOM walker)",
+      "phase": 1,
+      "milestone": "Phase 1 — Parallel Component Tracks",
+      "track": "a-eyes",
+      "type": "feature",
+      "priority": "p0",
+      "estimateHours": 8,
+      "estimate": "L",
+      "ownerRole": "DOM Engineer",
+      "labels": [
+        "phase:1-tracks",
+        "track:a-eyes",
+        "type:feature",
+        "area:dom-engine",
+        "area:performance",
+        "priority:p0",
+        "agent-ready",
+        "backlog"
+      ],
+      "blockedBy": [
+        "P0-2"
+      ],
+      "blocks": [
+        "A-2",
+        "A-3"
+      ],
+      "parallelSafe": true,
+      "githubIssue": 3,
+      "source": "docs/backlog/tickets/A-1.md"
+    },
+    {
+      "id": "A-2",
+      "title": "Heuristic Label, Group & Validation-Error Resolution Engine",
+      "phase": 1,
+      "milestone": "Phase 1 — Parallel Component Tracks",
+      "track": "a-eyes",
+      "type": "feature",
+      "priority": "p0",
+      "estimateHours": 12,
+      "estimate": "XL",
+      "ownerRole": "DOM Engineer",
+      "labels": [
+        "phase:1-tracks",
+        "track:a-eyes",
+        "type:feature",
+        "area:dom-engine",
+        "area:a11y",
+        "priority:p0",
+        "agent-ready",
+        "backlog"
+      ],
+      "blockedBy": [
+        "A-1"
+      ],
+      "blocks": [
+        "A-3"
+      ],
+      "parallelSafe": true,
+      "githubIssue": 4,
+      "source": "docs/backlog/tickets/A-2.md"
+    },
+    {
+      "id": "A-3",
+      "title": "Page State Serialization & Debounced Mutation Watcher (distillPage)",
+      "phase": 1,
+      "milestone": "Phase 1 — Parallel Component Tracks",
+      "track": "a-eyes",
+      "type": "feature",
+      "priority": "p0",
+      "estimateHours": 8,
+      "estimate": "L",
+      "ownerRole": "DOM Engineer",
+      "labels": [
+        "phase:1-tracks",
+        "track:a-eyes",
+        "type:feature",
+        "area:dom-engine",
+        "area:performance",
+        "priority:p0",
+        "agent-ready",
+        "backlog"
+      ],
+      "blockedBy": [
+        "A-1",
+        "A-2"
+      ],
+      "blocks": [
+        "INT-1",
+        "INT-2"
+      ],
+      "parallelSafe": true,
+      "githubIssue": 5,
+      "source": "docs/backlog/tickets/A-3.md"
+    },
+    {
+      "id": "B-1",
+      "title": "Framework-Bypassing Text & Value Injector (FILL / CLEAR)",
+      "phase": 1,
+      "milestone": "Phase 1 — Parallel Component Tracks",
+      "track": "b-hands",
+      "type": "feature",
+      "priority": "p0",
+      "estimateHours": 10,
+      "estimate": "L",
+      "ownerRole": "DOM Engineer",
+      "labels": [
+        "phase:1-tracks",
+        "track:b-hands",
+        "type:feature",
+        "area:dom-engine",
+        "priority:p0",
+        "agent-ready",
+        "backlog"
+      ],
+      "blockedBy": [
+        "P0-2"
+      ],
+      "blocks": [
+        "B-3",
+        "INT-1"
+      ],
+      "parallelSafe": true,
+      "githubIssue": 6,
+      "source": "docs/backlog/tickets/B-1.md"
+    },
+    {
+      "id": "B-2",
+      "title": "Controls Handler — SELECT, SET_CHECKED, CLICK, FOCUS, SCROLL, comboboxes",
+      "phase": 1,
+      "milestone": "Phase 1 — Parallel Component Tracks",
+      "track": "b-hands",
+      "type": "feature",
+      "priority": "p0",
+      "estimateHours": 10,
+      "estimate": "L",
+      "ownerRole": "DOM Engineer",
+      "labels": [
+        "phase:1-tracks",
+        "track:b-hands",
+        "type:feature",
+        "area:dom-engine",
+        "priority:p0",
+        "agent-ready",
+        "backlog"
+      ],
+      "blockedBy": [
+        "P0-2"
+      ],
+      "blocks": [
+        "B-3",
+        "INT-1"
+      ],
+      "parallelSafe": true,
+      "githubIssue": 7,
+      "source": "docs/backlog/tickets/B-2.md"
+    },
+    {
+      "id": "B-3",
+      "title": "Execution Queue & Multi-Step Action Runner (executeActions)",
+      "phase": 1,
+      "milestone": "Phase 1 — Parallel Component Tracks",
+      "track": "b-hands",
+      "type": "feature",
+      "priority": "p0",
+      "estimateHours": 6,
+      "estimate": "M",
+      "ownerRole": "DOM Engineer",
+      "labels": [
+        "phase:1-tracks",
+        "track:b-hands",
+        "type:feature",
+        "area:dom-engine",
+        "priority:p0",
+        "agent-ready",
+        "backlog"
+      ],
+      "blockedBy": [
+        "B-1",
+        "B-2"
+      ],
+      "blocks": [
+        "INT-1",
+        "INT-2"
+      ],
+      "parallelSafe": true,
+      "githubIssue": 8,
+      "source": "docs/backlog/tickets/B-3.md"
+    },
+    {
+      "id": "C-1",
+      "title": "LLM Service & System Prompt Engineering — POST /api/process-command with Structured Outputs",
+      "phase": 1,
+      "milestone": "Phase 1 — Parallel Component Tracks",
+      "track": "c-brain",
+      "type": "feature",
+      "priority": "p0",
+      "estimateHours": 10,
+      "estimate": "L",
+      "ownerRole": "Backend/AI Engineer",
+      "labels": [
+        "phase:1-tracks",
+        "track:c-brain",
+        "type:feature",
+        "area:brain",
+        "area:llm",
+        "priority:p0",
+        "agent-ready",
+        "backlog"
+      ],
+      "blockedBy": [
+        "P0-2"
+      ],
+      "blocks": [
+        "C-2",
+        "C-3",
+        "INT-1"
+      ],
+      "parallelSafe": true,
+      "githubIssue": 9,
+      "source": "docs/backlog/tickets/C-1.md"
+    },
+    {
+      "id": "C-2",
+      "title": "Prompt Evaluation & Edge-Case Test Suite (15 recorded scenarios, CI-gated)",
+      "phase": 1,
+      "milestone": "Phase 1 — Parallel Component Tracks",
+      "track": "c-brain",
+      "type": "test",
+      "priority": "p0",
+      "estimateHours": 8,
+      "estimate": "M",
+      "ownerRole": "Backend/AI Engineer",
+      "labels": [
+        "phase:1-tracks",
+        "track:c-brain",
+        "type:test",
+        "area:brain",
+        "area:llm",
+        "priority:p0",
+        "agent-ready",
+        "backlog"
+      ],
+      "blockedBy": [
+        "C-1"
+      ],
+      "blocks": [
+        "INT-1"
+      ],
+      "parallelSafe": true,
+      "githubIssue": 10,
+      "source": "docs/backlog/tickets/C-2.md"
+    },
+    {
+      "id": "C-3",
+      "title": "Edge Proxy & Key Custody — CORS/Origin allowlist, token brokering, quota (added ticket)",
+      "phase": 1,
+      "milestone": "Phase 1 — Parallel Component Tracks",
+      "track": "c-brain",
+      "type": "feature",
+      "priority": "p1",
+      "estimateHours": 6,
+      "estimate": "M",
+      "ownerRole": "Backend/AI Engineer",
+      "labels": [
+        "phase:1-tracks",
+        "track:c-brain",
+        "type:feature",
+        "area:brain",
+        "area:security",
+        "priority:p1",
+        "agent-ready",
+        "backlog"
+      ],
+      "blockedBy": [
+        "P0-2"
+      ],
+      "blocks": [
+        "D-2",
+        "INT-1"
+      ],
+      "parallelSafe": true,
+      "githubIssue": 11,
+      "source": "docs/backlog/tickets/C-3.md"
+    },
+    {
+      "id": "D-1",
+      "title": "Chrome MV3 Audio Capture & Voice Activity Detection (VAD)",
+      "phase": 1,
+      "milestone": "Phase 1 — Parallel Component Tracks",
+      "track": "d-ears",
+      "type": "feature",
+      "priority": "p0",
+      "estimateHours": 10,
+      "estimate": "L",
+      "ownerRole": "Extension Engineer",
+      "labels": [
+        "phase:1-tracks",
+        "track:d-ears",
+        "type:feature",
+        "area:extension",
+        "area:audio",
+        "priority:p0",
+        "agent-ready",
+        "backlog"
+      ],
+      "blockedBy": [
+        "P0-1"
+      ],
+      "blocks": [
+        "D-2",
+        "INT-1"
+      ],
+      "parallelSafe": true,
+      "githubIssue": 12,
+      "source": "docs/backlog/tickets/D-1.md"
+    },
+    {
+      "id": "D-2",
+      "title": "Low-Latency STT & TTS Feedback Client (audio → transcript → speech)",
+      "phase": 1,
+      "milestone": "Phase 1 — Parallel Component Tracks",
+      "track": "d-ears",
+      "type": "feature",
+      "priority": "p0",
+      "estimateHours": 8,
+      "estimate": "L",
+      "ownerRole": "Extension Engineer",
+      "labels": [
+        "phase:1-tracks",
+        "track:d-ears",
+        "type:feature",
+        "area:extension",
+        "area:audio",
+        "priority:p0",
+        "agent-ready",
+        "backlog"
+      ],
+      "blockedBy": [
+        "D-1",
+        "C-3"
+      ],
+      "blocks": [
+        "INT-1",
+        "INT-2"
+      ],
+      "parallelSafe": true,
+      "githubIssue": 13,
+      "source": "docs/backlog/tickets/D-2.md"
+    },
+    {
+      "id": "E-1",
+      "title": "Shadow-DOM Isolated Status Bar — the floating HUD pill",
+      "phase": 1,
+      "milestone": "Phase 1 — Parallel Component Tracks",
+      "track": "e-hud",
+      "type": "feature",
+      "priority": "p0",
+      "estimateHours": 8,
+      "estimate": "L",
+      "ownerRole": "Frontend/Extension Engineer",
+      "labels": [
+        "phase:1-tracks",
+        "track:e-hud",
+        "type:feature",
+        "area:extension",
+        "area:ui",
+        "priority:p0",
+        "agent-ready",
+        "backlog"
+      ],
+      "blockedBy": [
+        "P0-2"
+      ],
+      "blocks": [
+        "E-2",
+        "INT-1"
+      ],
+      "parallelSafe": true,
+      "githubIssue": 14,
+      "source": "docs/backlog/tickets/E-1.md"
+    },
+    {
+      "id": "E-2",
+      "title": "Dynamic Number Badge Overlay — [1], [2], [3] locked to their inputs at 60fps",
+      "phase": 1,
+      "milestone": "Phase 1 — Parallel Component Tracks",
+      "track": "e-hud",
+      "type": "feature",
+      "priority": "p0",
+      "estimateHours": 8,
+      "estimate": "L",
+      "ownerRole": "Frontend/Extension Engineer",
+      "labels": [
+        "phase:1-tracks",
+        "track:e-hud",
+        "type:feature",
+        "area:extension",
+        "area:ui",
+        "area:performance",
+        "priority:p0",
+        "agent-ready",
+        "backlog"
+      ],
+      "blockedBy": [
+        "E-1"
+      ],
+      "blocks": [
+        "INT-1"
+      ],
+      "parallelSafe": true,
+      "githubIssue": 15,
+      "source": "docs/backlog/tickets/E-2.md"
+    },
+    {
+      "id": "INT-1",
+      "title": "Master Control Loop — content script + background orchestrator wiring all five pillars",
+      "phase": 2,
+      "milestone": "Phase 2 — System Integration & Orchestration",
+      "track": "integration",
+      "type": "feature",
+      "priority": "p0",
+      "estimateHours": 16,
+      "estimate": "XL",
+      "ownerRole": "Lead Architect",
+      "labels": [
+        "phase:2-integration",
+        "track:integration",
+        "type:feature",
+        "area:extension",
+        "area:integration",
+        "priority:p0",
+        "agent-ready",
+        "backlog"
+      ],
+      "blockedBy": [
+        "A-3",
+        "B-3",
+        "C-1",
+        "C-3",
+        "D-2",
+        "E-2"
+      ],
+      "blocks": [
+        "INT-2",
+        "QA-1"
+      ],
+      "parallelSafe": false,
+      "githubIssue": 16,
+      "source": "docs/backlog/tickets/INT-1.md"
+    },
+    {
+      "id": "INT-2",
+      "title": "Post-Submit Validation & Error Recovery Loop — self-healing forms",
+      "phase": 2,
+      "milestone": "Phase 2 — System Integration & Orchestration",
+      "track": "integration",
+      "type": "feature",
+      "priority": "p0",
+      "estimateHours": 8,
+      "estimate": "L",
+      "ownerRole": "Lead Architect",
+      "labels": [
+        "phase:2-integration",
+        "track:integration",
+        "type:feature",
+        "area:extension",
+        "area:integration",
+        "priority:p0",
+        "agent-ready",
+        "backlog"
+      ],
+      "blockedBy": [
+        "INT-1"
+      ],
+      "blocks": [
+        "QA-1"
+      ],
+      "parallelSafe": false,
+      "githubIssue": 17,
+      "source": "docs/backlog/tickets/INT-2.md"
+    },
+    {
+      "id": "QA-1",
+      "title": "Form Torture Testbed — 5 hostile form patterns for E2E proof",
+      "phase": 3,
+      "milestone": "Phase 3 — QA & Synthetic Torture Testbed",
+      "track": "qa",
+      "type": "feature",
+      "priority": "p0",
+      "estimateHours": 20,
+      "estimate": "XL",
+      "ownerRole": "QA/Frontend Engineer",
+      "labels": [
+        "phase:3-qa",
+        "track:qa",
+        "type:feature",
+        "area:testbed",
+        "area:e2e",
+        "priority:p0",
+        "agent-ready",
+        "backlog"
+      ],
+      "blockedBy": [
+        "P0-1"
+      ],
+      "blocks": [],
+      "parallelSafe": true,
+      "githubIssue": 18,
+      "source": "docs/backlog/tickets/QA-1.md"
+    }
+  ]
+}

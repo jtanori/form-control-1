@@ -41,6 +41,44 @@ const TRACK_META = {
   qa: { label: 'QA & Testbed', emoji: '🧪' },
 };
 
+const LABEL_DESCRIPTIONS = {
+  'phase:0-foundation': 'Phase 0 — Foundation & Universal Contract (sequential, blocks all tracks)',
+  'phase:1-tracks': 'Phase 1 — Parallel component tracks (A–E) built against the frozen protocol',
+  'phase:2-integration': 'Phase 2 — System integration & orchestration',
+  'phase:3-qa': 'Phase 3 — QA & synthetic torture testbed',
+  'track:foundation': 'Track: monorepo, protocol contract & shared tooling',
+  'track:a-eyes': 'Track A — The Eyes: DOM distillation (discovery, labels, page state)',
+  'track:b-hands': 'Track B — The Hands: action execution (fill, select, click, queue)',
+  'track:c-brain': 'Track C — The Brain: LLM intent service, evals, edge proxy',
+  'track:d-ears': 'Track D — The Ears: microphone capture, VAD, STT, TTS',
+  'track:e-hud': 'Track E — The HUD: shadow-DOM status pill and number badges',
+  'track:integration': 'Cross-track integration & orchestration',
+  'track:qa': 'QA, testbed & end-to-end verification',
+  'type:feature': 'New user-facing capability',
+  'type:chore': 'Tooling, config or infrastructure work',
+  'type:test': 'Test suite / evaluation harness',
+  'type:spike': 'Time-boxed investigation',
+  'priority:p0': 'Blocks the MVP release',
+  'priority:p1': 'Needed for the MVP, not on the critical path',
+  'priority:p2': 'Nice to have / post-MVP',
+  'area:protocol': '@vfe/protocol — shared zod contract',
+  'area:dom-engine': '@vfe/dom-engine — DOM distillation & action execution',
+  'area:brain': '@vfe/brain — LLM service & HTTP API',
+  'area:llm': 'Prompt engineering, structured outputs, evaluations',
+  'area:extension': '@vfe/extension — Chrome MV3 client',
+  'area:audio': 'Microphone capture, VAD, STT, TTS',
+  'area:ui': 'HUD, badges, popup UI',
+  'area:performance': 'Explicit performance budgets and benchmarks',
+  'area:a11y': 'Accessibility (ARIA, focus management, screen readers)',
+  'area:security': 'Secret custody, CORS, prompt-injection surface',
+  'area:testbed': '@vfe/testbed playground',
+  'area:e2e': 'Playwright end-to-end suites',
+  'area:integration': 'Wiring across packages',
+  'area:tooling': 'Monorepo, build, CI',
+  'agent-ready': 'Fully specified: algorithms, acceptance criteria, test plan — safe to hand to a coding agent',
+  backlog: 'Part of the MVP backlog (auto-applied by scripts/backlog.mjs)',
+};
+
 const LABEL_COLORS = {
   'phase:0-foundation': '0b3d91',
   'phase:1-tracks': '1d76db',
@@ -153,6 +191,60 @@ function issueTitle(t) {
   return `[${t.meta.id}] ${t.meta.title}`;
 }
 
+/**
+ * Machine + human readable mirror of the GitHub labels/milestone for a ticket.
+ * The block is written into the issue body (and, optionally, posted as a
+ * comment) so the planning metadata survives even when the GitHub integration
+ * refuses to set labels/milestones.
+ * The fenced json block is stable and parseable: `<!-- vfe:metadata v1 <ID> -->`.
+ */
+function metadataBlock(t, { form = 'body' } = {}) {
+  const phase = PHASE_META[t.meta.phase];
+  const labels = [...new Set([...t.meta.labels, 'backlog'])];
+  const json = {
+    ticket: t.meta.id,
+    title: t.meta.title,
+    phase: phase.key,
+    milestone: phase.title,
+    labels,
+    priority: t.meta.priority,
+    type: t.meta.type,
+    track: t.meta.track,
+    ownerRole: t.meta.owner_role,
+    estimateHours: Number(t.meta.estimate_hours),
+    estimate: t.meta.estimate,
+    parallelSafe: t.meta.parallel_safe === true,
+    blockedBy: t.meta.blocked_by,
+    blocks: t.meta.blocks ?? [],
+    githubIssue: t.meta.github_issue ?? null,
+  };
+  const lines = [
+    `<!-- vfe:metadata v1 ${t.meta.id} -->`,
+  ];
+  if (form === 'comment') {
+    lines.push(`### 🏷️ Backlog metadata — \`${t.meta.id}\``, '');
+    lines.push(
+      'Status mirror of the planner metadata (labels + milestone) so it is greppable inside the issue even if labels cannot be applied through the GitHub integration.',
+      '',
+    );
+  } else {
+    lines.push('### Metadata (labels & milestone)', '');
+  }
+  lines.push(
+    `**Milestone:** \`${phase.title}\`  `,
+    `**Priority:** \`${t.meta.priority}\` · **Type:** \`${t.meta.type}\` · **Estimate:** \`${t.meta.estimate_hours}h (${t.meta.estimate})\` · **Owner:** ${t.meta.owner_role}`,
+    '',
+    '| Label | Meaning |',
+    '| --- | --- |',
+    ...labels.map((l) => `| \`${l}\` | ${LABEL_DESCRIPTIONS[l] ?? '—'} |`),
+    '',
+    '```json',
+    JSON.stringify(json, null, 2),
+    '```',
+  );
+  return lines.join('\n');
+}
+
 function issueBody(t, tickets) {
   const byId = new Map(tickets.map((x) => [x.meta.id, x]));
   const phase = PHASE_META[t.meta.phase];
@@ -177,6 +269,8 @@ function issueBody(t, tickets) {
     `| **Estimate** | ${t.meta.estimate_hours} h (${t.meta.estimate}) |`,
     `| **Parallel-safe** | ${t.meta.parallel_safe ? '✅ yes' : '⚠️ no — coordinate merges'} |`,
     `| **Source** | [\`docs/backlog/tickets/${t.meta.id}.md\`](https://github.com/${repoSlug()}/blob/main/docs/backlog/tickets/${t.meta.id}.md) |`,
+    '',
+    metadataBlock(t),
     '',
     '### Dependencies',
     '',
@@ -435,14 +529,100 @@ function writeBack(t, number) {
 
 // ---------------------------------------------------------------- commands
 
+function backlogJson(tickets) {
+  return {
+    generatedAt: new Date().toISOString(),
+    repository: repoSlug(),
+    ticketCount: tickets.length,
+    milestones: Object.values(PHASE_META).map((p) => ({ key: p.key, title: p.title, description: p.desc })),
+    labelDefinitions: Object.fromEntries(
+      [...new Set(tickets.flatMap((t) => [...t.meta.labels, 'backlog']))]
+        .sort()
+        .map((l) => [l, LABEL_DESCRIPTIONS[l] ?? '']),
+    ),
+    tickets: tickets.map((t) => ({
+      id: t.meta.id,
+      title: t.meta.title,
+      phase: t.meta.phase,
+      milestone: PHASE_META[t.meta.phase].title,
+      track: t.meta.track,
+      type: t.meta.type,
+      priority: t.meta.priority,
+      estimateHours: Number(t.meta.estimate_hours),
+      estimate: t.meta.estimate,
+      ownerRole: t.meta.owner_role,
+      labels: [...new Set([...t.meta.labels, 'backlog'])],
+      blockedBy: t.meta.blocked_by,
+      blocks: t.meta.blocks ?? [],
+      parallelSafe: t.meta.parallel_safe === true,
+      githubIssue: t.meta.github_issue ?? null,
+      source: `docs/backlog/tickets/${t.meta.id}.md`,
+    })),
+  };
+}
+
 function cmdBuild() {
   const tickets = loadTickets();
   mkdirSync(ISSUE_DIR, { recursive: true });
   writeFileSync(BACKLOG_MD, buildIndex(tickets) + '\n');
+  writeFileSync(join(ROOT, 'docs', 'backlog', 'backlog.json'), JSON.stringify(backlogJson(tickets), null, 2) + '\n');
   for (const t of tickets) {
     writeFileSync(join(ISSUE_DIR, `${t.meta.id}.md`), issueBody(t, tickets) + '\n');
+    writeFileSync(join(ISSUE_DIR, `${t.meta.id}.comment.md`), metadataBlock(t, { form: 'comment' }) + '\n');
   }
-  console.log(`BACKLOG.md written (${tickets.length} tickets) + docs/backlog/issues/*.md`);
+  console.log(
+    `BACKLOG.md + docs/backlog/backlog.json + docs/backlog/issues/*.md (+ .comment.md) written (${tickets.length} tickets)`,
+  );
+}
+
+/**
+ * Post the metadata block as a comment on every existing issue.
+ * Idempotent: skips issues that already contain the `<!-- vfe:metadata v1 ID -->` marker.
+ * Use when issues exist but labels/milestones could not be applied.
+ */
+function cmdAnnotate({ apply }) {
+  const tickets = loadTickets().filter((t) => t.meta.github_issue);
+  console.log(`${apply ? 'ANNOTATE' : 'DRY RUN'} against ${repoSlug()} — ${tickets.length} linked tickets\n`);
+  let posted = 0;
+  let skipped = 0;
+  let failed = 0;
+  for (const t of tickets) {
+    const marker = `<!-- vfe:metadata v1 ${t.meta.id} -->`;
+    if (!apply) {
+      console.log(`[${t.meta.id}] would comment on #${t.meta.github_issue} (${t.meta.labels.length + 1} labels, ${PHASE_META[t.meta.phase].title})`);
+      continue;
+    }
+    const comments = gh(['api', `repos/${repoSlug()}/issues/${t.meta.github_issue}/comments?per_page=100`, '--paginate'], {
+      json: true,
+      allowFail: true,
+    });
+    if (comments?.__error) {
+      warn(`cannot read comments (${comments.__error})`);
+      failed++;
+      continue;
+    }
+    if ((comments ?? []).some((c) => String(c.body ?? '').includes(marker))) {
+      skipped++;
+      continue;
+    }
+    const res = gh(
+      ['api', '--method', 'POST', `repos/${repoSlug()}/issues/${t.meta.github_issue}/comments`, '--input', '-'],
+      { json: true, input: JSON.stringify({ body: metadataBlock(t, { form: 'comment' }) }), allowFail: true },
+    );
+    if (res?.__error) {
+      warn(`cannot comment on #${t.meta.github_issue} (${res.__error})`);
+      failed++;
+    } else {
+      posted++;
+      console.log(`comment + #${t.meta.github_issue} [${t.meta.id}]`);
+    }
+  }
+  if (!apply) {
+    console.log('\nRun with --apply to post the metadata comments.');
+    return;
+  }
+  console.log(`\ncomments posted: ${posted} · already present: ${skipped} · failed: ${failed}`);
+  if (failed) process.exitCode = 1;
 }
 
 function cmdSync({ apply }) {
@@ -498,7 +678,16 @@ function cmdSync({ apply }) {
 const [, , cmd, ...rest] = process.argv;
 if (cmd === 'build') cmdBuild();
 else if (cmd === 'sync') cmdSync({ apply: rest.includes('--apply') });
+else if (cmd === 'annotate') cmdAnnotate({ apply: rest.includes('--apply') });
 else {
-  console.log('usage: node scripts/backlog.mjs <build|sync> [--apply|--dry-run]');
+  console.log(
+    [
+      'usage: node scripts/backlog.mjs <command> [--apply|--dry-run]',
+      '',
+      '  build               regenerate BACKLOG.md, backlog.json and docs/backlog/issues/*',
+      '  sync [--apply]      create/update labels, milestones and issues',
+      '  annotate [--apply]  post the labels/milestone metadata as a comment on each issue',
+    ].join('\n'),
+  );
   process.exit(1);
 }

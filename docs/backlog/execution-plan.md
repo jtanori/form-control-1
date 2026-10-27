@@ -133,7 +133,19 @@ Estimated wall-clock with a 5-way parallel team: **~9 working days** (see §3). 
 - Labels: `phase:*`, `track:*`, `type:*`, `priority:*`, `area:*`, `agent-ready`.
 - Milestone: `Phase 0…3`.
 - Every issue body is generated from the ticket file and ends with a **Live status** checklist. Editing the issue body by hand will be overwritten by the next sync — edit the ticket file instead.
-- Because GitHub App installation tokens can be **create-only**, the sync script degrades gracefully: if labels/milestones cannot be attached or an existing issue cannot be patched (HTTP 403), it warns once and continues. In that situation every issue still carries its full metadata table (phase, track, owner, estimate, dependencies, unblocks) **inside the body**, and `BACKLOG.md` stays the authoritative index with issue links. Re-run `node scripts/backlog.mjs sync --apply` from a token with `issues: write` to attach labels/milestones and refresh bodies.
+- **Metadata is embedded in every issue body.** Each issue contains a `### Metadata (labels & milestone)` section with the exact label list (and what each label means), the milestone, priority, type, estimate, owner role, plus a fenced `json` block that mirrors the same data machine-readably. The block is delimited by `<!-- vfe:metadata v1 <ID> -->` so it can be found, parsed, or replaced deterministically.
+- The same metadata also lives in [`backlog.json`](backlog.json) (all 18 tickets, generated) and in each ticket's YAML frontmatter.
+- Because GitHub App installation tokens can be **create-only** (create works; `PATCH` on issues, comments, labels and milestones return HTTP 403), the tooling degrades gracefully and never half-fails. When that happens:
+  1. `sync --apply` creates missing issues only and warns once;
+  2. `annotate --apply` posts the metadata block as an **idempotent comment** on each issue (skips issues that already contain the marker);
+  3. every issue still carries its metadata inside the body from creation time, and `BACKLOG.md` / `backlog.json` are the authoritative index.
+
+  To apply labels and milestones natively and refresh existing bodies, re-run from a connection with `issues: write`:
+
+  ```bash
+  node scripts/backlog.mjs sync --apply       # labels + milestones + refreshed bodies
+  node scripts/backlog.mjs annotate --apply   # optional: metadata comment per issue
+  ```
 
 ## 7. Kickoff prompt for a coding agent
 

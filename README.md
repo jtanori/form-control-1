@@ -19,7 +19,8 @@ This repository currently contains the **engineering blueprint and backlog** for
 | [`docs/backlog/tickets/`](docs/backlog/tickets) | **Source of truth** — one detailed ticket per file (algorithm specs, acceptance criteria, test plans) |
 | [`docs/backlog/execution-plan.md`](docs/backlog/execution-plan.md) | Dependency graph, agent assignment, schedule, definition of ready/done, kickoff prompt |
 | [`docs/architecture.md`](docs/architecture.md) | ADRs (protocol-first, offscreen audio, key custody, state machine, shadow-DOM isolation) + threat model |
-| [`docs/backlog/issues/`](docs/backlog/issues) | Rendered issue bodies (generated, used by the sync script) |
+| [`docs/backlog/issues/`](docs/backlog/issues) | Rendered issue bodies + metadata-comment payloads (generated, used by the sync script) |
+| [`docs/backlog/backlog.json`](docs/backlog/backlog.json) | Machine-readable metadata for all 18 tickets (labels, milestone, deps, estimates, issue numbers) |
 | [`scripts/backlog.mjs`](scripts/backlog.mjs) | Backlog tooling: `build` (regenerate docs) and `sync` (publish to GitHub) |
 
 ## The backlog in one screen
@@ -59,6 +60,9 @@ node scripts/backlog.mjs sync --dry-run
 
 # create/update labels, milestones and issues (idempotent; writes issue numbers back)
 node scripts/backlog.mjs sync --apply
+
+# post the labels/milestone block as an idempotent comment on each issue
+node scripts/backlog.mjs annotate --apply
 ```
 
 Issue titles are `[<ID>] <title>` so an agent can be told simply: *"implement `A-2`"*. The kickoff prompt for coding agents lives in [`docs/backlog/execution-plan.md`](docs/backlog/execution-plan.md#7-kickoff-prompt-for-a-coding-agent).
