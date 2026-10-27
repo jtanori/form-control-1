@@ -1,0 +1,38 @@
+{
+  "manifest_version": 3,
+  "name": "Voice Form Engine",
+  "version": "0.1.0",
+  "description": "Fill forms by voice.",
+  "permissions": ["storage", "offscreen", "scripting", "activeTab"],
+  "host_permissions": ["<all_urls>"],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_idle",
+      "all_frames": false
+    }
+  ],
+  "action": {
+    "default_title": "Voice Form Engine",
+    "default_popup": "popup.html"
+  },
+  "commands": {
+    "activate-voice": {
+      "suggested_key": {
+        "default": "Alt+V"
+      },
+      "description": "Start voice input"
+    }
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["vad/*", "worklets/*.js"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}

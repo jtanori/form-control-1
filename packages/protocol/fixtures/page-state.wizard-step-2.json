@@ -1,0 +1,101 @@
+{
+  "urlOrAppTitle": "Account setup — Step 2 of 4",
+  "elements": [
+    {
+      "id": "vfe_1",
+      "badgeIndex": 1,
+      "type": "text",
+      "label": "First Name",
+      "value": "Alice",
+      "required": true,
+      "disabled": false,
+      "focused": true,
+      "groupLabel": "Your name"
+    },
+    {
+      "id": "vfe_2",
+      "badgeIndex": 2,
+      "type": "text",
+      "label": "Middle Name",
+      "value": "",
+      "required": false,
+      "disabled": false,
+      "focused": false,
+      "groupLabel": "Your name"
+    },
+    {
+      "id": "vfe_3",
+      "badgeIndex": 3,
+      "type": "text",
+      "label": "Last Name",
+      "value": "Liddell",
+      "required": true,
+      "disabled": false,
+      "focused": false,
+      "groupLabel": "Your name"
+    },
+    {
+      "id": "vfe_4",
+      "badgeIndex": 4,
+      "type": "password",
+      "label": "Password",
+      "value": "<redacted>",
+      "required": true,
+      "disabled": false,
+      "focused": false,
+      "validationError": "Password must be at least 8 characters"
+    },
+    {
+      "id": "vfe_5",
+      "badgeIndex": 5,
+      "type": "radio",
+      "label": "Standard shipping",
+      "value": true,
+      "required": true,
+      "disabled": false,
+      "focused": false,
+      "groupLabel": "Shipping method"
+    },
+    {
+      "id": "vfe_6",
+      "badgeIndex": 6,
+      "type": "radio",
+      "label": "Express shipping",
+      "value": false,
+      "required": true,
+      "disabled": false,
+      "focused": false,
+      "groupLabel": "Shipping method"
+    },
+    {
+      "id": "vfe_7",
+      "badgeIndex": 7,
+      "type": "select",
+      "label": "Country",
+      "value": "US",
+      "options": [
+        {
+          "label": "United States",
+          "value": "US"
+        },
+        {
+          "label": "Canada",
+          "value": "CA"
+        }
+      ],
+      "required": false,
+      "disabled": true,
+      "focused": false
+    },
+    {
+      "id": "vfe_8",
+      "badgeIndex": 8,
+      "type": "button",
+      "label": "Continue",
+      "value": "",
+      "required": false,
+      "disabled": false,
+      "focused": false
+    }
+  ]
+}

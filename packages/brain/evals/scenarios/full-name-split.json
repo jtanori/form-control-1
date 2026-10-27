@@ -1,0 +1,59 @@
+{
+  "id": "full-name-split",
+  "title": "Three-part name into First/Middle/Last",
+  "tags": ["multi-field", "format"],
+  "pageState": "wizard-step-2",
+  "history": [],
+  "transcript": "John Q Public",
+  "expect": {
+    "actions": [
+      {
+        "action": "FILL",
+        "target": {
+          "label": "First Name",
+          "groupLabel": "Your name"
+        },
+        "value": "John"
+      },
+      {
+        "action": "FILL",
+        "target": {
+          "label": "Middle Name",
+          "groupLabel": "Your name"
+        },
+        "value": "Q"
+      },
+      {
+        "action": "FILL",
+        "target": {
+          "label": "Last Name",
+          "groupLabel": "Your name"
+        },
+        "value": "Public"
+      }
+    ],
+    "allowExtraActions": false,
+    "allowOrderChange": true
+  },
+  "mock": {
+    "thoughtProcess": "Three name parts map one-to-one onto First, Middle and Last in the same group.",
+    "spokenFeedback": "Filled in your full name.",
+    "actions": [
+      {
+        "action": "FILL",
+        "targetId": "vfe_1",
+        "value": "John"
+      },
+      {
+        "action": "FILL",
+        "targetId": "vfe_2",
+        "value": "Q"
+      },
+      {
+        "action": "FILL",
+        "targetId": "vfe_3",
+        "value": "Public"
+      }
+    ]
+  }
+}

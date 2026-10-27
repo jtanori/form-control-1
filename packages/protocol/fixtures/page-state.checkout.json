@@ -1,0 +1,105 @@
+{
+  "urlOrAppTitle": "Checkout — Acme",
+  "elements": [
+    {
+      "id": "vfe_1",
+      "badgeIndex": 1,
+      "type": "text",
+      "label": "First Name",
+      "placeholder": "Jane",
+      "value": "",
+      "required": true,
+      "disabled": false,
+      "focused": true,
+      "groupLabel": "Contact"
+    },
+    {
+      "id": "vfe_2",
+      "badgeIndex": 2,
+      "type": "text",
+      "label": "Last Name",
+      "placeholder": "Doe",
+      "value": "",
+      "required": true,
+      "disabled": false,
+      "focused": false,
+      "groupLabel": "Contact"
+    },
+    {
+      "id": "vfe_3",
+      "badgeIndex": 3,
+      "type": "email",
+      "label": "Email",
+      "placeholder": "you@example.com",
+      "value": "",
+      "required": true,
+      "disabled": false,
+      "focused": false,
+      "groupLabel": "Contact"
+    },
+    {
+      "id": "vfe_4",
+      "badgeIndex": 4,
+      "type": "text",
+      "label": "Address Line 1",
+      "value": "",
+      "required": true,
+      "disabled": false,
+      "focused": false,
+      "groupLabel": "Shipping Address"
+    },
+    {
+      "id": "vfe_5",
+      "badgeIndex": 5,
+      "type": "select",
+      "label": "State",
+      "value": "CA",
+      "options": [
+        {
+          "label": "California",
+          "value": "CA"
+        },
+        {
+          "label": "Texas",
+          "value": "TX"
+        }
+      ],
+      "required": true,
+      "disabled": false,
+      "focused": false,
+      "groupLabel": "Shipping Address"
+    },
+    {
+      "id": "vfe_6",
+      "badgeIndex": 6,
+      "type": "text",
+      "label": "ZIP Code",
+      "value": "",
+      "required": true,
+      "disabled": false,
+      "focused": false,
+      "groupLabel": "Shipping Address"
+    },
+    {
+      "id": "vfe_7",
+      "badgeIndex": 7,
+      "type": "checkbox",
+      "label": "I agree to the terms and conditions",
+      "value": false,
+      "required": true,
+      "disabled": false,
+      "focused": false
+    },
+    {
+      "id": "vfe_8",
+      "badgeIndex": 8,
+      "type": "button",
+      "label": "Place order",
+      "value": "",
+      "required": false,
+      "disabled": false,
+      "focused": false
+    }
+  ],
+  "globalErrors": []
+}

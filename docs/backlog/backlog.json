@@ -81,10 +81,7 @@
         "backlog"
       ],
       "blockedBy": [],
-      "blocks": [
-        "P0-2",
-        "QA-1"
-      ],
+      "blocks": ["P0-2", "QA-1"],
       "parallelSafe": false,
       "githubIssue": 1,
       "source": "docs/backlog/tickets/P0-1.md"
@@ -109,22 +106,8 @@
         "agent-ready",
         "backlog"
       ],
-      "blockedBy": [
-        "P0-1"
-      ],
-      "blocks": [
-        "A-1",
-        "A-2",
-        "A-3",
-        "B-1",
-        "B-2",
-        "B-3",
-        "C-1",
-        "C-3",
-        "D-1",
-        "E-1",
-        "E-2"
-      ],
+      "blockedBy": ["P0-1"],
+      "blocks": ["A-1", "A-2", "A-3", "B-1", "B-2", "B-3", "C-1", "C-3", "D-1", "E-1", "E-2"],
       "parallelSafe": false,
       "githubIssue": 2,
       "source": "docs/backlog/tickets/P0-2.md"
@@ -150,13 +133,8 @@
         "agent-ready",
         "backlog"
       ],
-      "blockedBy": [
-        "P0-2"
-      ],
-      "blocks": [
-        "A-2",
-        "A-3"
-      ],
+      "blockedBy": ["P0-2"],
+      "blocks": ["A-2", "A-3"],
       "parallelSafe": true,
       "githubIssue": 3,
       "source": "docs/backlog/tickets/A-1.md"
@@ -182,12 +160,8 @@
         "agent-ready",
         "backlog"
       ],
-      "blockedBy": [
-        "A-1"
-      ],
-      "blocks": [
-        "A-3"
-      ],
+      "blockedBy": ["A-1"],
+      "blocks": ["A-3"],
       "parallelSafe": true,
       "githubIssue": 4,
       "source": "docs/backlog/tickets/A-2.md"
@@ -213,14 +187,8 @@
         "agent-ready",
         "backlog"
       ],
-      "blockedBy": [
-        "A-1",
-        "A-2"
-      ],
-      "blocks": [
-        "INT-1",
-        "INT-2"
-      ],
+      "blockedBy": ["A-1", "A-2"],
+      "blocks": ["INT-1", "INT-2"],
       "parallelSafe": true,
       "githubIssue": 5,
       "source": "docs/backlog/tickets/A-3.md"
@@ -245,13 +213,8 @@
         "agent-ready",
         "backlog"
       ],
-      "blockedBy": [
-        "P0-2"
-      ],
-      "blocks": [
-        "B-3",
-        "INT-1"
-      ],
+      "blockedBy": ["P0-2"],
+      "blocks": ["B-3", "INT-1"],
       "parallelSafe": true,
       "githubIssue": 6,
       "source": "docs/backlog/tickets/B-1.md"
@@ -276,13 +239,8 @@
         "agent-ready",
         "backlog"
       ],
-      "blockedBy": [
-        "P0-2"
-      ],
-      "blocks": [
-        "B-3",
-        "INT-1"
-      ],
+      "blockedBy": ["P0-2"],
+      "blocks": ["B-3", "INT-1"],
       "parallelSafe": true,
       "githubIssue": 7,
       "source": "docs/backlog/tickets/B-2.md"
@@ -307,14 +265,8 @@
         "agent-ready",
         "backlog"
       ],
-      "blockedBy": [
-        "B-1",
-        "B-2"
-      ],
-      "blocks": [
-        "INT-1",
-        "INT-2"
-      ],
+      "blockedBy": ["B-1", "B-2"],
+      "blocks": ["INT-1", "INT-2"],
       "parallelSafe": true,
       "githubIssue": 8,
       "source": "docs/backlog/tickets/B-3.md"
@@ -340,14 +292,8 @@
         "agent-ready",
         "backlog"
       ],
-      "blockedBy": [
-        "P0-2"
-      ],
-      "blocks": [
-        "C-2",
-        "C-3",
-        "INT-1"
-      ],
+      "blockedBy": ["P0-2"],
+      "blocks": ["C-2", "C-3", "INT-1"],
       "parallelSafe": true,
       "githubIssue": 9,
       "source": "docs/backlog/tickets/C-1.md"
@@ -373,12 +319,8 @@
         "agent-ready",
         "backlog"
       ],
-      "blockedBy": [
-        "C-1"
-      ],
-      "blocks": [
-        "INT-1"
-      ],
+      "blockedBy": ["C-1"],
+      "blocks": ["INT-1"],
       "parallelSafe": true,
       "githubIssue": 10,
       "source": "docs/backlog/tickets/C-2.md"
@@ -404,13 +346,8 @@
         "agent-ready",
         "backlog"
       ],
-      "blockedBy": [
-        "P0-2"
-      ],
-      "blocks": [
-        "D-2",
-        "INT-1"
-      ],
+      "blockedBy": ["P0-2"],
+      "blocks": ["D-2", "INT-1"],
       "parallelSafe": true,
       "githubIssue": 11,
       "source": "docs/backlog/tickets/C-3.md"
@@ -436,13 +373,8 @@
         "agent-ready",
         "backlog"
       ],
-      "blockedBy": [
-        "P0-1"
-      ],
-      "blocks": [
-        "D-2",
-        "INT-1"
-      ],
+      "blockedBy": ["P0-1"],
+      "blocks": ["D-2", "INT-1"],
       "parallelSafe": true,
       "githubIssue": 12,
       "source": "docs/backlog/tickets/D-1.md"
@@ -468,14 +400,8 @@
         "agent-ready",
         "backlog"
       ],
-      "blockedBy": [
-        "D-1",
-        "C-3"
-      ],
-      "blocks": [
-        "INT-1",
-        "INT-2"
-      ],
+      "blockedBy": ["D-1", "C-3"],
+      "blocks": ["INT-1", "INT-2"],
       "parallelSafe": true,
       "githubIssue": 13,
       "source": "docs/backlog/tickets/D-2.md"
@@ -501,13 +427,8 @@
         "agent-ready",
         "backlog"
       ],
-      "blockedBy": [
-        "P0-2"
-      ],
-      "blocks": [
-        "E-2",
-        "INT-1"
-      ],
+      "blockedBy": ["P0-2"],
+      "blocks": ["E-2", "INT-1"],
       "parallelSafe": true,
       "githubIssue": 14,
       "source": "docs/backlog/tickets/E-1.md"
@@ -534,12 +455,8 @@
         "agent-ready",
         "backlog"
       ],
-      "blockedBy": [
-        "E-1"
-      ],
-      "blocks": [
-        "INT-1"
-      ],
+      "blockedBy": ["E-1"],
+      "blocks": ["INT-1"],
       "parallelSafe": true,
       "githubIssue": 15,
       "source": "docs/backlog/tickets/E-2.md"
@@ -565,18 +482,8 @@
         "agent-ready",
         "backlog"
       ],
-      "blockedBy": [
-        "A-3",
-        "B-3",
-        "C-1",
-        "C-3",
-        "D-2",
-        "E-2"
-      ],
-      "blocks": [
-        "INT-2",
-        "QA-1"
-      ],
+      "blockedBy": ["A-3", "B-3", "C-1", "C-3", "D-2", "E-2"],
+      "blocks": ["INT-2", "QA-1"],
       "parallelSafe": false,
       "githubIssue": 16,
       "source": "docs/backlog/tickets/INT-1.md"
@@ -602,12 +509,8 @@
         "agent-ready",
         "backlog"
       ],
-      "blockedBy": [
-        "INT-1"
-      ],
-      "blocks": [
-        "QA-1"
-      ],
+      "blockedBy": ["INT-1"],
+      "blocks": ["QA-1"],
       "parallelSafe": false,
       "githubIssue": 17,
       "source": "docs/backlog/tickets/INT-2.md"
@@ -633,9 +536,7 @@
         "agent-ready",
         "backlog"
       ],
-      "blockedBy": [
-        "P0-1"
-      ],
+      "blockedBy": ["P0-1"],
       "blocks": [],
       "parallelSafe": true,
       "githubIssue": 18,

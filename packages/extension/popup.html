@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Voice Form Engine</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        font-family: system-ui, sans-serif;
+      }
+      body {
+        width: 300px;
+        margin: 0;
+        padding: 16px;
+        font-size: 12px;
+      }
+      h1 {
+        font-size: 14px;
+        margin: 0 0 8px;
+      }
+      h2 {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: #888;
+        margin: 16px 0 6px;
+      }
+      p {
+        line-height: 1.5;
+        color: #666;
+      }
+      label.field {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        margin: 6px 0;
+      }
+      select,
+      input[type='url'] {
+        max-width: 170px;
+      }
+      button {
+        width: 100%;
+        padding: 8px;
+        font: inherit;
+        cursor: pointer;
+        margin-top: 8px;
+      }
+      #micStatus[data-tone='ok'],
+      #saveStatus[data-tone='ok'] {
+        color: #18794e;
+      }
+      #micStatus[data-tone='error'],
+      #saveStatus[data-tone='error'] {
+        color: #b42318;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Voice Form Engine</h1>
+    <p>Audio is captured on the extension's origin, processed in memory only and never stored.</p>
+    <p id="micStatus" data-tone="idle">Microphone is off.</p>
+    <button id="enable" type="button">Enable microphone</button>
+
+    <h2>Voice input</h2>
+    <label class="field"
+      >Language
+      <select id="language"></select
+    ></label>
+    <label class="field"
+      >Speak confirmations <input id="speakConfirmations" type="checkbox"
+    /></label>
+    <label class="field"
+      >Listen after speaking <input id="listenAfterSpeaking" type="checkbox"
+    /></label>
+
+    <h2>Assistant voice</h2>
+    <label class="field"
+      >Voice
+      <select id="voice"></select
+    ></label>
+    <label class="field">Rate <input id="rate" type="range" min="0.5" max="2" step="0.02" /></label>
+
+    <h2>Advanced</h2>
+    <label class="field">Edge URL <input id="edgeUrl" type="url" /></label>
+    <p id="saveStatus" data-tone="idle"></p>
+
+    <script type="module" src="/src/popup.ts"></script>
+  </body>
+</html>

@@ -1,0 +1,33 @@
+{
+  "id": "spoken-email",
+  "title": "Spoken email normalisation",
+  "tags": ["format", "email"],
+  "pageState": "formats",
+  "history": [],
+  "transcript": "john dot doe at acme dot co dot uk",
+  "expect": {
+    "actions": [
+      {
+        "action": "FILL",
+        "target": {
+          "label": "Email",
+          "groupLabel": "About you"
+        },
+        "value": "john.doe@acme.co.uk"
+      }
+    ],
+    "allowExtraActions": false,
+    "allowOrderChange": true
+  },
+  "mock": {
+    "thoughtProcess": "\"at\" becomes @, \"dot\" becomes ., preserving the multi-part domain.",
+    "spokenFeedback": "Filled in your email.",
+    "actions": [
+      {
+        "action": "FILL",
+        "targetId": "vfe_2",
+        "value": "john.doe@acme.co.uk"
+      }
+    ]
+  }
+}

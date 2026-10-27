@@ -1,0 +1,37 @@
+[
+  {
+    "action": "FILL",
+    "targetId": "vfe_1",
+    "value": "Alice"
+  },
+  {
+    "action": "SELECT",
+    "targetId": "vfe_5",
+    "value": "CA"
+  },
+  {
+    "action": "SET_CHECKED",
+    "targetId": "vfe_7",
+    "checked": true
+  },
+  {
+    "action": "CLICK",
+    "targetId": "vfe_8"
+  },
+  {
+    "action": "FOCUS",
+    "targetId": "vfe_2"
+  },
+  {
+    "action": "CLEAR",
+    "targetId": "vfe_2"
+  },
+  {
+    "action": "SCROLL",
+    "direction": "bottom"
+  },
+  {
+    "action": "ASK_CLARIFICATION",
+    "questionToUser": "Which address should I use?"
+  }
+]

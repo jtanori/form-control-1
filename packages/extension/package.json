@@ -1,0 +1,31 @@
+{
+  "name": "@vfe/extension",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "vite build",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "clean": "rm -rf dist .turbo coverage",
+    "prebuild": "node scripts/prepare-vad-assets.mjs",
+    "prepare:assets": "node scripts/prepare-vad-assets.mjs",
+    "test:e2e:audio": "playwright test",
+    "fixtures:audio": "node scripts/make-audio-fixtures.mjs",
+    "test:e2e": "node scripts/build-hud-bundle.mjs && node scripts/build-badge-bundle.mjs && playwright test -c playwright.hud.config.ts",
+    "test:e2e:hud": "node scripts/build-hud-bundle.mjs && node scripts/build-badge-bundle.mjs && playwright test -c playwright.hud.config.ts"
+  },
+  "dependencies": {
+    "@ricky0123/vad-web": "^0.0.27",
+    "@vfe/dom-engine": "workspace:*",
+    "@vfe/protocol": "workspace:*",
+    "zod": "3.23.8"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.287",
+    "vite": "^5.4.11",
+    "@playwright/test": "^1.48.2",
+    "esbuild": "^0.21.5"
+  }
+}

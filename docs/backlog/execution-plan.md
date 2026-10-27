@@ -82,14 +82,14 @@ Estimated wall-clock with a 5-way parallel team: **~9 working days** (see §3). 
 
 ## 2. Agent assignment (parallel sprint)
 
-| Slot | Agent/Dev | Tickets | Rationale |
-| --- | --- | --- | --- |
-| 1 | **Lead / Architect** | `P0-1`, `P0-2`, then `INT-1`, `INT-2` | Owns the contract and the loop; only they may touch `@vfe/protocol` after freeze. |
-| 2 | **DOM Engineer** | `A-1`, `A-2`, `A-3` | The Eyes are one mental model: discovery → labels → serialisation. |
-| 3 | **DOM Engineer II** | `B-1`, `B-2`, `B-3` | The Hands share the event/pointer semantics; splitting A and B across agents is safe (different files, shared protocol only). |
-| 4 | **Backend/AI** | `C-1`, `C-2`, `C-3` | Prompt, evals and the proxy are one deployable (`@vfe/brain`). |
-| 5 | **Extension Engineer** | `D-1`, `D-2`, `E-1`, `E-2` | All four are extension-internal and share the messaging layer. |
-| 6 | **QA/Frontend** | `QA-1` (from day 1), then E2E support | Testbed must exist before B-1/B-2 can be proven. |
+| Slot | Agent/Dev              | Tickets                               | Rationale                                                                                                                     |
+| ---- | ---------------------- | ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| 1    | **Lead / Architect**   | `P0-1`, `P0-2`, then `INT-1`, `INT-2` | Owns the contract and the loop; only they may touch `@vfe/protocol` after freeze.                                             |
+| 2    | **DOM Engineer**       | `A-1`, `A-2`, `A-3`                   | The Eyes are one mental model: discovery → labels → serialisation.                                                            |
+| 3    | **DOM Engineer II**    | `B-1`, `B-2`, `B-3`                   | The Hands share the event/pointer semantics; splitting A and B across agents is safe (different files, shared protocol only). |
+| 4    | **Backend/AI**         | `C-1`, `C-2`, `C-3`                   | Prompt, evals and the proxy are one deployable (`@vfe/brain`).                                                                |
+| 5    | **Extension Engineer** | `D-1`, `D-2`, `E-1`, `E-2`            | All four are extension-internal and share the messaging layer.                                                                |
+| 6    | **QA/Frontend**        | `QA-1` (from day 1), then E2E support | Testbed must exist before B-1/B-2 can be proven.                                                                              |
 
 **Conflict avoidance rules**
 
@@ -102,13 +102,13 @@ Estimated wall-clock with a 5-way parallel team: **~9 working days** (see §3). 
 
 ## 3. Suggested schedule
 
-| Day | What lands | Milestone |
-| --- | --- | --- |
-| 1 | `P0-1`, `P0-2` merged; `QA-1` skeleton started | `phase-0` complete |
+| Day | What lands                                                                | Milestone                                 |
+| --- | ------------------------------------------------------------------------- | ----------------------------------------- |
+| 1   | `P0-1`, `P0-2` merged; `QA-1` skeleton started                            | `phase-0` complete                        |
 | 2–4 | `A-1`, `A-2`; `B-1`, `B-2`; `C-1`, `C-3`; `D-1`; `E-1`; `QA-1` routes 1–3 | protocol consumers exist, first PRs green |
-| 5–6 | `A-3`; `B-3`; `C-2`; `D-2`; `E-2`; `QA-1` routes 4–10 | all tracks complete |
-| 7–8 | `INT-1` (loop + state machine), integration bugfixes | first end-to-end voice fill |
-| 9 | `INT-2`, QA-1 acceptance run, demo recording | MVP |
+| 5–6 | `A-3`; `B-3`; `C-2`; `D-2`; `E-2`; `QA-1` routes 4–10                     | all tracks complete                       |
+| 7–8 | `INT-1` (loop + state machine), integration bugfixes                      | first end-to-end voice fill               |
+| 9   | `INT-2`, QA-1 acceptance run, demo recording                              | MVP                                       |
 
 ---
 
@@ -171,19 +171,19 @@ Do not modify packages/protocol/src without explicit approval (ADR-010).
 
 The blueprint was used verbatim where it was precise. These gaps were found during a design pass and are now specified rather than left ambiguous:
 
-| # | Gap in the blueprint | Resolution |
-| --- | --- | --- |
-| 1 | **`C-3` is referenced in the graph but never specified.** | Specified as the **edge proxy & key custody** service: CORS/origin allowlist, session tokens, rate limits, STT proxying, and — critically — keeping every provider key out of the extension bundle. |
-| 2 | **API keys would have shipped inside the extension.** | ADR-005: the extension holds only `EDGE_URL` + a short-lived session token; CI greps for key material. |
-| 3 | **The protocol had no request/response envelope.** C-1 needs `{ pageState, transcript, conversationHistory }` but there was no schema for it. | Added `ProcessCommandRequest/Response`, `ConversationTurn`, `AgentStatus`, `ActionResult`/`ActionErrorCode` to P0-2 (required extensions, frozen alongside the originals). |
-| 4 | **No error channel for actions.** B-3 must "report missing target IDs" but the protocol had no error type. | `ActionResultSchema` with a closed `ActionErrorCode` enum; the Brain can consume failures in a repair turn. |
-| 5 | **`value` untyped for radios/checkboxes**, which makes "is Express selected?" unanswerable. | A-3 defines exact value semantics per type (`boolean` for checkbox/radio, array for multi-select, `'<redacted>'` for passwords). |
-| 6 | **Runtime validation was unspecified.** | Every boundary parses with the protocol schemas, both client- and server-side; the Brain additionally guards `targetId` existence (ADR-008). |
-| 7 | **`keypress` is deprecated** (removed in React 19 handling). | B-1 drops it from default dispatch, keeps `beforeinput`; documented, with an opt-in `legacyKeypress`. |
-| 8 | **Shadow DOM `mode` unspecified** for the HUD. | ADR-006: `open` + scoped CSS, because Playwright cannot pierce closed roots and isolation is achieved by scoping. |
-| 9 | **No stale-event strategy** for the control loop. | ADR-009: generation counter inside an explicit reducer (INT-1). |
-| 10 | **`MutationObserver` on the document misses shadow roots** and can feedback-loop on its own attribute writes. | A-3 specifies shadow-root observation, an attribute filter, and self-mutation suppression; E-2 positions with `transform` in a single rAF. |
-| 11 | **jsdom silently breaks geometry-based tests.** | P0-1 ships a `mockLayout()` helper; ADR-007 mandates Playwright for anything layout-dependent. |
-| 12 | **No latency instrumentation** for the "< 400 ms / < 1200 ms" claims. | Every ticket on the latency path specifies `performance.mark`/`performance.now()` boundaries and a measurement in its PR. |
-| 13 | **The 5 testbed forms are not enough to prove isolation and performance.** | QA-1 adds `/stress` (500 inputs, shadow hosts), `/hostile-css`, `/validation`, `/redirect-after-submit`. |
-| 14 | **`input[type=file]` and multi-select ambiguity.** | Declared explicit non-goals (A-1, B-2) so agents do not invent scope. |
+| #   | Gap in the blueprint                                                                                                                          | Resolution                                                                                                                                                                                          |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | **`C-3` is referenced in the graph but never specified.**                                                                                     | Specified as the **edge proxy & key custody** service: CORS/origin allowlist, session tokens, rate limits, STT proxying, and — critically — keeping every provider key out of the extension bundle. |
+| 2   | **API keys would have shipped inside the extension.**                                                                                         | ADR-005: the extension holds only `EDGE_URL` + a short-lived session token; CI greps for key material.                                                                                              |
+| 3   | **The protocol had no request/response envelope.** C-1 needs `{ pageState, transcript, conversationHistory }` but there was no schema for it. | Added `ProcessCommandRequest/Response`, `ConversationTurn`, `AgentStatus`, `ActionResult`/`ActionErrorCode` to P0-2 (required extensions, frozen alongside the originals).                          |
+| 4   | **No error channel for actions.** B-3 must "report missing target IDs" but the protocol had no error type.                                    | `ActionResultSchema` with a closed `ActionErrorCode` enum; the Brain can consume failures in a repair turn.                                                                                         |
+| 5   | **`value` untyped for radios/checkboxes**, which makes "is Express selected?" unanswerable.                                                   | A-3 defines exact value semantics per type (`boolean` for checkbox/radio, array for multi-select, `'<redacted>'` for passwords).                                                                    |
+| 6   | **Runtime validation was unspecified.**                                                                                                       | Every boundary parses with the protocol schemas, both client- and server-side; the Brain additionally guards `targetId` existence (ADR-008).                                                        |
+| 7   | **`keypress` is deprecated** (removed in React 19 handling).                                                                                  | B-1 drops it from default dispatch, keeps `beforeinput`; documented, with an opt-in `legacyKeypress`.                                                                                               |
+| 8   | **Shadow DOM `mode` unspecified** for the HUD.                                                                                                | ADR-006: `open` + scoped CSS, because Playwright cannot pierce closed roots and isolation is achieved by scoping.                                                                                   |
+| 9   | **No stale-event strategy** for the control loop.                                                                                             | ADR-009: generation counter inside an explicit reducer (INT-1).                                                                                                                                     |
+| 10  | **`MutationObserver` on the document misses shadow roots** and can feedback-loop on its own attribute writes.                                 | A-3 specifies shadow-root observation, an attribute filter, and self-mutation suppression; E-2 positions with `transform` in a single rAF.                                                          |
+| 11  | **jsdom silently breaks geometry-based tests.**                                                                                               | P0-1 ships a `mockLayout()` helper; ADR-007 mandates Playwright for anything layout-dependent.                                                                                                      |
+| 12  | **No latency instrumentation** for the "< 400 ms / < 1200 ms" claims.                                                                         | Every ticket on the latency path specifies `performance.mark`/`performance.now()` boundaries and a measurement in its PR.                                                                           |
+| 13  | **The 5 testbed forms are not enough to prove isolation and performance.**                                                                    | QA-1 adds `/stress` (500 inputs, shadow hosts), `/hostile-css`, `/validation`, `/redirect-after-submit`.                                                                                            |
+| 14  | **`input[type=file]` and multi-select ambiguity.**                                                                                            | Declared explicit non-goals (A-1, B-2) so agents do not invent scope.                                                                                                                               |

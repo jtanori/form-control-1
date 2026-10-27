@@ -1,0 +1,46 @@
+{
+  "id": "mixed-fill-and-select",
+  "title": "Select and fill in one utterance",
+  "tags": ["multi-field", "select"],
+  "pageState": "checkout-basic",
+  "history": [],
+  "transcript": "set the state to Texas and the zip to 73301",
+  "expect": {
+    "actions": [
+      {
+        "action": "SELECT",
+        "target": {
+          "label": "State",
+          "groupLabel": "Shipping Address"
+        },
+        "value": "TX"
+      },
+      {
+        "action": "FILL",
+        "target": {
+          "label": "ZIP Code",
+          "groupLabel": "Shipping Address"
+        },
+        "value": "73301"
+      }
+    ],
+    "allowExtraActions": false,
+    "allowOrderChange": true
+  },
+  "mock": {
+    "thoughtProcess": "Texas maps to the option value TX; the ZIP digit string fills directly.",
+    "spokenFeedback": "Set the state to Texas and filled the ZIP code.",
+    "actions": [
+      {
+        "action": "SELECT",
+        "targetId": "vfe_5",
+        "value": "TX"
+      },
+      {
+        "action": "FILL",
+        "targetId": "vfe_6",
+        "value": "73301"
+      }
+    ]
+  }
+}

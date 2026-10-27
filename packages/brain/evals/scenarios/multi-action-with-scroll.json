@@ -1,0 +1,40 @@
+{
+  "id": "multi-action-with-scroll",
+  "title": "Scroll then check in order",
+  "tags": ["ordering", "scroll"],
+  "pageState": "checkout-basic",
+  "history": [],
+  "transcript": "go to the bottom and check the terms box",
+  "expect": {
+    "actions": [
+      {
+        "action": "SCROLL",
+        "direction": "bottom"
+      },
+      {
+        "action": "SET_CHECKED",
+        "target": {
+          "label": "I agree to the terms and conditions"
+        },
+        "checked": true
+      }
+    ],
+    "allowExtraActions": false,
+    "allowOrderChange": false
+  },
+  "mock": {
+    "thoughtProcess": "Scroll to reveal the terms, then check that box.",
+    "spokenFeedback": "Scrolled down and checked the terms box.",
+    "actions": [
+      {
+        "action": "SCROLL",
+        "direction": "bottom"
+      },
+      {
+        "action": "SET_CHECKED",
+        "targetId": "vfe_7",
+        "checked": true
+      }
+    ]
+  }
+}

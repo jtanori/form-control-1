@@ -1,0 +1,76 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.12.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm format:check
+      - run: pnpm typecheck
+      - run: pnpm build
+      - run: pnpm test -- --coverage
+      - name: Content scripts never assign HTML
+        run: |
+          if grep -rnE "\.(inner|outer)HTML|insertAdjacentHTML|document\.write" packages/extension/src/content; then
+            echo "Untrusted HUD text must be rendered with textContent"; exit 1
+          fi
+      - name: Extension ships zero credentials
+        run: |
+          if grep -rniE "sk-[a-z0-9]|GROQ_API_KEY|DEEPGRAM|OPENAI_API_KEY" packages/extension/src packages/extension/public; then
+            echo "Credential material must never ship in the extension"; exit 1
+          fi
+      - run: pnpm --filter @vfe/brain eval
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage
+          path: |
+            coverage/
+            packages/brain/evals/report.*
+          if-no-files-found: ignore
+
+  e2e:
+    runs-on: ubuntu-latest
+    needs: ci
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.12.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - run: pnpm exec playwright install --with-deps chromium
+      # Per-package steps (rather than one turbo run) so a failure names the
+      # package and surfaces the assertion in the check annotation.
+      - run: pnpm --filter @vfe/dom-engine test:e2e
+      - run: pnpm --filter @vfe/extension test:e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-results
+          path: |
+            **/test-results/**
+            **/playwright-report/**
+          if-no-files-found: ignore

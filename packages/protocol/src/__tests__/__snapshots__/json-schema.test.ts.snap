@@ -1,0 +1,184 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Structured Outputs compatibility > emits a snapshot-stable schema 1`] = `
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "properties": {
+    "actions": {
+      "items": {
+        "anyOf": [
+          {
+            "additionalProperties": false,
+            "properties": {
+              "action": {
+                "const": "FILL",
+                "type": "string",
+              },
+              "targetId": {
+                "type": "string",
+              },
+              "value": {
+                "type": "string",
+              },
+            },
+            "required": [
+              "action",
+              "targetId",
+              "value",
+            ],
+            "type": "object",
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "action": {
+                "const": "SELECT",
+                "type": "string",
+              },
+              "targetId": {
+                "type": "string",
+              },
+              "value": {
+                "type": "string",
+              },
+            },
+            "required": [
+              "action",
+              "targetId",
+              "value",
+            ],
+            "type": "object",
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "action": {
+                "const": "SET_CHECKED",
+                "type": "string",
+              },
+              "checked": {
+                "type": "boolean",
+              },
+              "targetId": {
+                "type": "string",
+              },
+            },
+            "required": [
+              "action",
+              "targetId",
+              "checked",
+            ],
+            "type": "object",
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "action": {
+                "const": "CLICK",
+                "type": "string",
+              },
+              "targetId": {
+                "type": "string",
+              },
+            },
+            "required": [
+              "action",
+              "targetId",
+            ],
+            "type": "object",
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "action": {
+                "const": "FOCUS",
+                "type": "string",
+              },
+              "targetId": {
+                "type": "string",
+              },
+            },
+            "required": [
+              "action",
+              "targetId",
+            ],
+            "type": "object",
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "action": {
+                "const": "CLEAR",
+                "type": "string",
+              },
+              "targetId": {
+                "type": "string",
+              },
+            },
+            "required": [
+              "action",
+              "targetId",
+            ],
+            "type": "object",
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "action": {
+                "const": "SCROLL",
+                "type": "string",
+              },
+              "direction": {
+                "enum": [
+                  "up",
+                  "down",
+                  "top",
+                  "bottom",
+                ],
+                "type": "string",
+              },
+            },
+            "required": [
+              "action",
+              "direction",
+            ],
+            "type": "object",
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "action": {
+                "const": "ASK_CLARIFICATION",
+                "type": "string",
+              },
+              "questionToUser": {
+                "type": "string",
+              },
+            },
+            "required": [
+              "action",
+              "questionToUser",
+            ],
+            "type": "object",
+          },
+        ],
+      },
+      "type": "array",
+    },
+    "spokenFeedback": {
+      "description": "Short confirmation or question to speak via TTS",
+      "type": "string",
+    },
+    "thoughtProcess": {
+      "description": "Brief reasoning about what the user wants",
+      "type": "string",
+    },
+  },
+  "required": [
+    "thoughtProcess",
+    "actions",
+  ],
+  "type": "object",
+}
+`;

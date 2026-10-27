@@ -1,0 +1,30 @@
+{
+  "id": "custom-combobox-open",
+  "title": "Collapsed custom combobox must be clicked first",
+  "tags": ["combobox", "p0"],
+  "pageState": "combobox-collapsed",
+  "history": [],
+  "transcript": "select California",
+  "expect": {
+    "actions": [
+      {
+        "action": "CLICK",
+        "target": {
+          "label": "State"
+        }
+      }
+    ],
+    "allowExtraActions": false,
+    "allowOrderChange": true
+  },
+  "mock": {
+    "thoughtProcess": "The combobox advertises no options yet; clicking it opens the menu for the next turn.",
+    "spokenFeedback": "Opening the State menu.",
+    "actions": [
+      {
+        "action": "CLICK",
+        "targetId": "vfe_1"
+      }
+    ]
+  }
+}

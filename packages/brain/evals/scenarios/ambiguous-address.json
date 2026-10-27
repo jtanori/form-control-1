@@ -1,0 +1,31 @@
+{
+  "id": "ambiguous-address",
+  "title": "Two address groups must clarify",
+  "tags": ["ambiguity", "clarification"],
+  "pageState": "addresses",
+  "history": [],
+  "transcript": "put 123 Main St as my address",
+  "expect": {
+    "actions": [
+      {
+        "action": "ASK_CLARIFICATION"
+      }
+    ],
+    "allowExtraActions": false,
+    "allowOrderChange": true,
+    "clarificationMustMention": ["Billing", "Shipping"],
+    "spokenFeedback": {
+      "minLength": 10
+    }
+  },
+  "mock": {
+    "thoughtProcess": "Address Line 1 exists in both Billing Address and Shipping Address; the target is ambiguous.",
+    "spokenFeedback": "Should I use Billing Address or Shipping Address?",
+    "actions": [
+      {
+        "action": "ASK_CLARIFICATION",
+        "questionToUser": "Should I put 123 Main St in Billing Address or Shipping Address?"
+      }
+    ]
+  }
+}

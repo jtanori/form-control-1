@@ -1,0 +1,21 @@
+{
+  "thoughtProcess": "User dictated name and email; three empty text fields match by label.",
+  "spokenFeedback": "Filled in your name and email.",
+  "actions": [
+    {
+      "action": "FILL",
+      "targetId": "vfe_1",
+      "value": "Alice"
+    },
+    {
+      "action": "FILL",
+      "targetId": "vfe_2",
+      "value": "Liddell"
+    },
+    {
+      "action": "FILL",
+      "targetId": "vfe_3",
+      "value": "alice@wonderland.com"
+    }
+  ]
+}

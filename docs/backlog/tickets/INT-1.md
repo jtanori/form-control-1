@@ -1,7 +1,7 @@
 ---
 github_issue: 16
 id: INT-1
-title: "Master Control Loop — content script + background orchestrator wiring all five pillars"
+title: 'Master Control Loop — content script + background orchestrator wiring all five pillars'
 phase: 2
 track: integration
 type: feature
@@ -9,7 +9,16 @@ priority: p0
 estimate: XL
 estimate_hours: 16
 owner_role: Lead Architect
-labels: [phase:2-integration, track:integration, type:feature, area:extension, area:integration, priority:p0, agent-ready]
+labels:
+  [
+    phase:2-integration,
+    track:integration,
+    type:feature,
+    area:extension,
+    area:integration,
+    priority:p0,
+    agent-ready,
+  ]
 milestone: phase-2
 blocked_by: [A-3, B-3, C-1, C-3, D-2, E-2]
 blocks: [INT-2, QA-1]
@@ -83,7 +92,10 @@ content script (per tab) ◄──────────►│  offscreen docu
 
 ```ts
 // packages/extension/src/content/loop.ts
-export async function runLoop(deps: { hud: HudController; badges: BadgeController }): Promise<void> {
+export async function runLoop(deps: {
+  hud: HudController;
+  badges: BadgeController;
+}): Promise<void> {
   // 1. ACTIVATE (Alt+V command → SW → content)  ─────────────────────────────
   const gen = ++generation;
 
@@ -91,17 +103,20 @@ export async function runLoop(deps: { hud: HudController; badges: BadgeControlle
   //    screen while the user speaks), and again on every state change.
   let pageState = distillPage({ maxElements: 250 });
   deps.badges.sync(pageState);
-  const watcher = watchPage((change) => {
-    if (gen !== generation) return;
-    deps.badges.sync(change.pageState);
-    pageState = change.pageState;                 // keep the freshest snapshot
-    sendToSw({ type: 'PAGE_STATE_UPDATED', requestId, generation: gen, pageState });
-  }, { debounceMs: 250 });
+  const watcher = watchPage(
+    (change) => {
+      if (gen !== generation) return;
+      deps.badges.sync(change.pageState);
+      pageState = change.pageState; // keep the freshest snapshot
+      sendToSw({ type: 'PAGE_STATE_UPDATED', requestId, generation: gen, pageState });
+    },
+    { debounceMs: 250 },
+  );
 
   // 3. EARS: start listening (D-1)
   setState({ kind: 'listening', startedAt: now() });
   deps.hud.setStatus('listening');
-  await sendToSw({ type: 'AUDIO_START' });        // offscreen doc spins up VAD
+  await sendToSw({ type: 'AUDIO_START' }); // offscreen doc spins up VAD
 
   // 4. on VAD_SPEECH_END || AUDIO_ERROR (SW relays)
   //    → state 'transcribing'; HUD 'thinking'
@@ -114,9 +129,14 @@ export async function runLoop(deps: { hud: HudController; badges: BadgeControlle
   // 6. EXECUTING (HUD 'executing' + progress)
   const report = await executeActions(brainResponse.actions, {
     stepDelayMs: 100,
-    onActionStart: (a, i, n) => { deps.badges.flash(a.targetId); deps.hud.setActionsProgress(i, n); },
-    onActionEnd: (r) => { deps.badges.flash(r.action.targetId, r.ok ? 'ok' : 'error'); },
-    signal,                                        // tied to generation/Esc
+    onActionStart: (a, i, n) => {
+      deps.badges.flash(a.targetId);
+      deps.hud.setActionsProgress(i, n);
+    },
+    onActionEnd: (r) => {
+      deps.badges.flash(r.action.targetId, r.ok ? 'ok' : 'error');
+    },
+    signal, // tied to generation/Esc
   });
 
   // 7. FEEDBACK: speak spokenFeedback (D-2), never while VAD is live (TTS mutes VAD)
@@ -158,9 +178,18 @@ export async function runLoop(deps: { hud: HudController; badges: BadgeControlle
 
 ```ts
 export type LoopErrorCode =
-  | 'MIC_DENIED' | 'NO_SPEECH' | 'STT_FAILED' | 'STT_TIMEOUT'
-  | 'BRAIN_FAILED' | 'BRAIN_TIMEOUT' | 'INVALID_BRAIN_RESPONSE'
-  | 'EXECUTION_PARTIAL' | 'ELEMENT_MISSING' | 'PAGE_NAVIGATED' | 'ABORTED' | 'UNKNOWN';
+  | 'MIC_DENIED'
+  | 'NO_SPEECH'
+  | 'STT_FAILED'
+  | 'STT_TIMEOUT'
+  | 'BRAIN_FAILED'
+  | 'BRAIN_TIMEOUT'
+  | 'INVALID_BRAIN_RESPONSE'
+  | 'EXECUTION_PARTIAL'
+  | 'ELEMENT_MISSING'
+  | 'PAGE_NAVIGATED'
+  | 'ABORTED'
+  | 'UNKNOWN';
 ```
 
 Each code has: HUD copy, `recoverable: boolean`, and an optional automatic retry policy (only `STT_TIMEOUT` retries once automatically).
@@ -171,32 +200,32 @@ Each code has: HUD copy, `recoverable: boolean`, and an optional automatic retry
 
 The state machine is a pure reducer — test it exhaustively:
 
-| Test | Assertion |
-| --- | --- |
-| `happy-path` | `idle → listening → transcribing → thinking → executing → idle` with correct HUD calls |
-| `stale-event-ignored` | `VAD_SPEECH_END` during `executing` does not change state |
-| `double-activation` | second activation during `thinking` aborts the first (generation bump) and the first's continuation is dropped |
-| `esc-at-every-state` | from all 6 states, `Esc` → `idle`, audio stopped, speech cancelled, actions aborted |
-| `clarification-loop` | `ASK_CLARIFICATION` → `clarifying` → speak question → `listening` with the question in history |
-| `partial-execution` | 1 of 3 actions fails → `error` recoverable, spoken summary mentions the failed field label |
-| `brain-timeout` | `BRAIN_TIMEOUT` → `error` with retry affordance |
-| `mic-denied` | `AUDIO_ERROR NOT_ALLOWED` → `error` with "Grant microphone access" copy |
-| `silence-timeout` | no speech for 15 s → auto-stop + hint |
-| `navigation` | page unload mid-execute → state `error PAGE_NAVIGATED`, no crash on `sendMessage` to a dead tab |
-| `no-auto-submit` | Brain response with zero actions and no clarification → no `CLICK` emitted |
+| Test                  | Assertion                                                                                                      |
+| --------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `happy-path`          | `idle → listening → transcribing → thinking → executing → idle` with correct HUD calls                         |
+| `stale-event-ignored` | `VAD_SPEECH_END` during `executing` does not change state                                                      |
+| `double-activation`   | second activation during `thinking` aborts the first (generation bump) and the first's continuation is dropped |
+| `esc-at-every-state`  | from all 6 states, `Esc` → `idle`, audio stopped, speech cancelled, actions aborted                            |
+| `clarification-loop`  | `ASK_CLARIFICATION` → `clarifying` → speak question → `listening` with the question in history                 |
+| `partial-execution`   | 1 of 3 actions fails → `error` recoverable, spoken summary mentions the failed field label                     |
+| `brain-timeout`       | `BRAIN_TIMEOUT` → `error` with retry affordance                                                                |
+| `mic-denied`          | `AUDIO_ERROR NOT_ALLOWED` → `error` with "Grant microphone access" copy                                        |
+| `silence-timeout`     | no speech for 15 s → auto-stop + hint                                                                          |
+| `navigation`          | page unload mid-execute → state `error PAGE_NAVIGATED`, no crash on `sendMessage` to a dead tab                |
+| `no-auto-submit`      | Brain response with zero actions and no clarification → no `CLICK` emitted                                     |
 
 ### Integration (Playwright + real extension, mocked C-3)
 
 Load the unpacked extension in a persistent Chromium context; run against testbed forms with a **mock edge server** that returns scripted STT transcripts and Brain responses:
 
-| Test | Assertion |
-| --- | --- |
-| `voice-fills-react-form` | fake audio → transcript → Brain returns 2 `FILL`s → React state JSON shows both values |
-| `badges-then-fill` | badges visible before speaking; the filled field's badge flashed green |
-| `clarify-then-complete` | mock returns `ASK_CLARIFICATION`, then after the second fake utterance returns the `FILL` |
-| `esc-mid-execution` | 5-action batch; `Esc` after action 1 → actions 3–5 never run, state `idle` |
-| `page-navigation` | click submit → new page → extension re-initialises and badges render on the new page |
-| `no-mic-denied-silent-fail` | with mic denied, the HUD shows the error state (not a spinner forever) |
+| Test                        | Assertion                                                                                 |
+| --------------------------- | ----------------------------------------------------------------------------------------- |
+| `voice-fills-react-form`    | fake audio → transcript → Brain returns 2 `FILL`s → React state JSON shows both values    |
+| `badges-then-fill`          | badges visible before speaking; the filled field's badge flashed green                    |
+| `clarify-then-complete`     | mock returns `ASK_CLARIFICATION`, then after the second fake utterance returns the `FILL` |
+| `esc-mid-execution`         | 5-action batch; `Esc` after action 1 → actions 3–5 never run, state `idle`                |
+| `page-navigation`           | click submit → new page → extension re-initialises and badges render on the new page      |
+| `no-mic-denied-silent-fail` | with mic denied, the HUD shows the error state (not a spinner forever)                    |
 
 ## Acceptance criteria
 

@@ -1,7 +1,7 @@
 ---
 github_issue: 18
 id: QA-1
-title: "Form Torture Testbed — 5 hostile form patterns for E2E proof"
+title: 'Form Torture Testbed — 5 hostile form patterns for E2E proof'
 phase: 3
 track: qa
 type: feature
@@ -24,18 +24,18 @@ Each form must record and expose its state so automated tests can assert what th
 
 ## Routes
 
-| Route | Form | Why it's hard |
-| --- | --- | --- |
-| `/` | Index with links + a "how to run E2E" panel | Developer entry point |
-| `/react-controlled` | Strict controlled inputs, email validation, password + confirmation, submit dumps JSON | React's value tracker defeats naive value setting (B-1) |
-| `/ambiguous-twins` | Side-by-side "Billing Address" and "Shipping Address" with identical labels (Street/City/Zip) | Forces `ASK_CLARIFICATION` (C-1 rule 6) and correct `groupLabel` (A-2) |
-| `/unlabelled` | Zero `<label>` tags: placeholder-only, visual proximity text, `name`-only inputs | Label waterfall steps 5–6 (A-2) |
-| `/custom-ui` | Radix UI Select, Radix Checkbox, Radix Dialog, react-day-picker date input, a MUI Autocomplete | `pointerdown` listeners, portals, `role=combobox` with options rendered only when open (B-2) |
-| `/wizard` | 3-step form; step 1 unmounts on "Next", step 2 mounts fresh; back button works | SPA node replacement, id re-adoption (A-3), watcher (A-3) |
-| `/validation` | Server-simulated errors (async, 400 ms), global banner, password rules, CAPTCHA toggle | INT-2 all six outcomes |
-| `/stress` | 500 inputs in a virtualised-ish grid, 3 shadow-DOM hosts, 1 open + 1 closed shadow root | A-1 performance budget, E-2 60fps, maxElements cap |
-| `/hostile-css` | `* { all: unset !important }`, aggressive `z-index`, fixed bottom bar, RTL section | E-1/E-2 isolation |
-| `/redirect-after-submit` | Real navigation after submit (full page load) to `/thank-you` | INT-1 navigation handling |
+| Route                    | Form                                                                                           | Why it's hard                                                                                |
+| ------------------------ | ---------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| `/`                      | Index with links + a "how to run E2E" panel                                                    | Developer entry point                                                                        |
+| `/react-controlled`      | Strict controlled inputs, email validation, password + confirmation, submit dumps JSON         | React's value tracker defeats naive value setting (B-1)                                      |
+| `/ambiguous-twins`       | Side-by-side "Billing Address" and "Shipping Address" with identical labels (Street/City/Zip)  | Forces `ASK_CLARIFICATION` (C-1 rule 6) and correct `groupLabel` (A-2)                       |
+| `/unlabelled`            | Zero `<label>` tags: placeholder-only, visual proximity text, `name`-only inputs               | Label waterfall steps 5–6 (A-2)                                                              |
+| `/custom-ui`             | Radix UI Select, Radix Checkbox, Radix Dialog, react-day-picker date input, a MUI Autocomplete | `pointerdown` listeners, portals, `role=combobox` with options rendered only when open (B-2) |
+| `/wizard`                | 3-step form; step 1 unmounts on "Next", step 2 mounts fresh; back button works                 | SPA node replacement, id re-adoption (A-3), watcher (A-3)                                    |
+| `/validation`            | Server-simulated errors (async, 400 ms), global banner, password rules, CAPTCHA toggle         | INT-2 all six outcomes                                                                       |
+| `/stress`                | 500 inputs in a virtualised-ish grid, 3 shadow-DOM hosts, 1 open + 1 closed shadow root        | A-1 performance budget, E-2 60fps, maxElements cap                                           |
+| `/hostile-css`           | `* { all: unset !important }`, aggressive `z-index`, fixed bottom bar, RTL section             | E-1/E-2 isolation                                                                            |
+| `/redirect-after-submit` | Real navigation after submit (full page load) to `/thank-you`                                  | INT-1 navigation handling                                                                    |
 
 ## Required technical features
 
@@ -78,14 +78,14 @@ Include, in at least two places: `aria-labelledby` chains, `aria-describedby` + 
 
 ## Test plan for the testbed itself
 
-| Test | Assertion |
-| --- | --- |
-| `routes-render` | Vitest + Testing Library renders every route without errors |
-| `state-dump-live` | Typing into the controlled form updates `#state-dump` |
-| `submit-recording` | Submitting pushes exactly one entry into `window.__TESTBED__.submits` |
-| `focus-order` | Tab order is sensible on every form (a11y sanity) |
+| Test                | Assertion                                                                   |
+| ------------------- | --------------------------------------------------------------------------- |
+| `routes-render`     | Vitest + Testing Library renders every route without errors                 |
+| `state-dump-live`   | Typing into the controlled form updates `#state-dump`                       |
+| `submit-recording`  | Submitting pushes exactly one entry into `window.__TESTBED__.submits`       |
+| `focus-order`       | Tab order is sensible on every form (a11y sanity)                           |
 | `no-console-errors` | Rendering + one interaction per route produces zero console errors/warnings |
-| `deterministic` | Two runs of the wizard with the same inputs yield identical state dumps |
+| `deterministic`     | Two runs of the wizard with the same inputs yield identical state dumps     |
 
 ## Acceptance criteria
 
@@ -111,7 +111,7 @@ Include, in at least two places: `aria-labelledby` chains, `aria-describedby` + 
 ## Definition of done
 
 - Deployed nowhere (local only) but startable with one command.
-- Voice scripts for all 5 forms written in the README, e.g. `/react-controlled`: *"My name is Alice Wonder, email alice at wonderland dot com, password is wonderland123, confirm it, then click Create account."*
+- Voice scripts for all 5 forms written in the README, e.g. `/react-controlled`: _"My name is Alice Wonder, email alice at wonderland dot com, password is wonderland123, confirm it, then click Create account."_
 - Fixture HTML snapshots exported to `packages/dom-engine/test/fixtures/` where the engine tests need static copies (keep the testbed as the source of truth; snapshot via a small script).
 - PR title: `[QA-1] Form torture testbed`.
 

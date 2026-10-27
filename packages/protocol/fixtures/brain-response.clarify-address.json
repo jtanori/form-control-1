@@ -1,0 +1,10 @@
+{
+  "thoughtProcess": "Both Billing Address and Shipping Address exist; the request is ambiguous.",
+  "spokenFeedback": "Should I put that in Billing Address or Shipping Address?",
+  "actions": [
+    {
+      "action": "ASK_CLARIFICATION",
+      "questionToUser": "Should I put that in Billing Address or Shipping Address?"
+    }
+  ]
+}

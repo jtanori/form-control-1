@@ -1,0 +1,30 @@
+{
+  "id": "submit-and-navigate",
+  "title": "Submit-like button click",
+  "tags": ["navigation", "p0"],
+  "pageState": "wizard-step-2",
+  "history": [],
+  "transcript": "go to the next page",
+  "expect": {
+    "actions": [
+      {
+        "action": "CLICK",
+        "target": {
+          "label": "Continue"
+        }
+      }
+    ],
+    "allowExtraActions": false,
+    "allowOrderChange": true
+  },
+  "mock": {
+    "thoughtProcess": "Continue is the next-page control.",
+    "spokenFeedback": "Continuing.",
+    "actions": [
+      {
+        "action": "CLICK",
+        "targetId": "vfe_8"
+      }
+    ]
+  }
+}

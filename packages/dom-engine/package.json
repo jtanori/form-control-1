@@ -1,0 +1,32 @@
+{
+  "name": "@vfe/dom-engine",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -b",
+    "typecheck": "tsc -b",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:e2e": "node scripts/build-e2e-bundle.mjs && playwright test",
+    "clean": "rm -rf dist .turbo coverage"
+  },
+  "dependencies": {
+    "@vfe/protocol": "workspace:*"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.48.2",
+    "esbuild": "^0.21.5"
+  }
+}

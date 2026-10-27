@@ -1,0 +1,33 @@
+{
+  "id": "spoken-number",
+  "title": "Spelled-out number normalisation",
+  "tags": ["format", "number"],
+  "pageState": "formats",
+  "history": [],
+  "transcript": "twelve thousand five hundred",
+  "expect": {
+    "actions": [
+      {
+        "action": "FILL",
+        "target": {
+          "label": "Annual Income",
+          "groupLabel": "Finances"
+        },
+        "value": "12500"
+      }
+    ],
+    "allowExtraActions": false,
+    "allowOrderChange": true
+  },
+  "mock": {
+    "thoughtProcess": "Words map to the numeral 12500.",
+    "spokenFeedback": "Filled in your annual income.",
+    "actions": [
+      {
+        "action": "FILL",
+        "targetId": "vfe_3",
+        "value": "12500"
+      }
+    ]
+  }
+}

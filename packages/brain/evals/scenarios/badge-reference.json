@@ -1,0 +1,33 @@
+{
+  "id": "badge-reference",
+  "title": "Badge number reference",
+  "tags": ["badge"],
+  "pageState": "checkout-basic",
+  "history": [],
+  "transcript": "Put 90210 in field 4",
+  "expect": {
+    "actions": [
+      {
+        "action": "FILL",
+        "target": {
+          "label": "Address Line 1",
+          "groupLabel": "Shipping Address"
+        },
+        "value": "90210"
+      }
+    ],
+    "allowExtraActions": false,
+    "allowOrderChange": true
+  },
+  "mock": {
+    "thoughtProcess": "Badge 4 is Address Line 1 in the Shipping Address group.",
+    "spokenFeedback": "Filled field 4.",
+    "actions": [
+      {
+        "action": "FILL",
+        "targetId": "vfe_4",
+        "value": "90210"
+      }
+    ]
+  }
+}
