@@ -65,6 +65,43 @@ returned in `excluded` with a `VisibilityReason`. The engine never logs.
 open shadow roots and resets the ID registry. Site-authored
 `data-vfe-ignore` attributes are never touched.
 
+## How labels are resolved (A-2)
+
+`resolveContext()` runs a deterministic waterfall — `aria-label` →
+`aria-labelledby` → `<label for>` → wrapping `<label>` → proximity →
+placeholder/name/id/`Field` — and returns the label, group legend, visible
+validation error and required provenance. It never throws and never returns an
+empty label. The full waterfall, including the anti-duplication rule for shared
+headers, is documented in [`docs/dom-engine/label-waterfall.md`](../../docs/dom-engine/label-waterfall.md).
+
+## distillPage & the watcher (A-3)
+
+`distillPage()` composes discovery + context into a `PageState` that always
+passes `PageStateSchema.parse`. Serialisation rules that matter:
+
+- **Passwords are never serialised**: `'<redacted>'` when non-empty, `''` when
+  empty. This is a privacy invariant, asserted by a string-search test.
+- Checkboxes/radios serialise to booleans; multi-selects to string arrays;
+  buttons always `''`; numbers stay strings (the Brain formats).
+- `<select>` exposes every option; a custom `role="combobox"` exposes `[]` while
+  closed and its visible `role="option"` children once expanded.
+- `disabled` honours `disabled`, `aria-disabled` and a disabled `<fieldset>`;
+  `focused` works inside open shadow roots.
+
+`watchPage(onChange)` observes the document **and every open shadow root**,
+debounces bursts (120 ms trailing, 500 ms max wait), ignores its own
+`data-vfe-*` writes, and emits only real diffs (`added` / `removed` /
+`updated`). New nodes that represent the same logical field (same name, type,
+label and group) re-adopt their old `vfeId`, so a React re-render does not
+renumber the form.
+
+```ts
+const watcher = watchPage((change) => hud.render(change));
+watcher.start();
+// … later
+watcher.stop();
+```
+
 ## Testing
 
 - Unit: `pnpm --filter @vfe/dom-engine test` (jsdom + `mockLayout` — jsdom has
