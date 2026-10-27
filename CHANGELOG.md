@@ -38,3 +38,9 @@ follows Keep a Changelog; the project is pre-1.0 and ships from `main`.
   edge case, a label-based assertion engine (multiset, ordering, spoken surface,
   fabricated-target and password-leak guards), mock/live/record CLI modes, cost
   guard, committed baseline, nightly workflow and Markdown/JSON reports.
+- **Edge proxy & key custody (C-3):** a second Hono entrypoint on `:8788` that
+  brokers all provider access: extension-id session tokens (HMAC, 24 h),
+  origin allowlist/CORS, fail-closed configuration, per-token rate and
+  concurrency limits, 5 MB/512 KB body caps, schema and protocol validation
+  before forwarding, header scrubbing, typed upstream errors, `MOCK_STT=1`
+  and zero provider keys in the extension.
