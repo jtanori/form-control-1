@@ -13,7 +13,7 @@ export default tseslint.config(
       '**/test-results/**',
       'packages/extension/dist/**',
       'packages/extension/public/vad/**',
-      'packages/extension/test/browser/.bundle/**',
+      '**/.bundle/**',
       'node_modules/**',
     ],
   },
