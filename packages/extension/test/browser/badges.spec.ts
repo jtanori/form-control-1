@@ -72,10 +72,12 @@ test.describe('badge overlay', () => {
 
   test('stays glued to its input while scrolling', async ({ page }) => {
     await setup(page, 40);
-    for (const index of [1, 7, 13, 21]) await expectGlued(page, `vfe_${index}`);
+    // Rows sit at 40 + n * 46 px, so these are on screen before scrolling.
+    for (const index of [1, 5, 9, 13]) await expectGlued(page, `vfe_${index}`);
     await page.evaluate(() => window.scrollTo(0, 400));
-    await page.waitForTimeout(150);
-    for (const index of [10, 11, 12, 14]) await expectGlued(page, `vfe_${index}`);
+    await page.waitForTimeout(200);
+    // After a 400 px scroll these rows are the ones inside the viewport.
+    for (const index of [12, 16, 20, 23]) await expectGlued(page, `vfe_${index}`);
   });
 
   test('re-glues after a viewport resize', async ({ page }) => {
@@ -89,19 +91,30 @@ test.describe('badge overlay', () => {
   });
 
   test('follows an expanding accordion', async ({ page }) => {
-    await setup(
-      page,
-      2,
-      '<div id="panel" style="height:0;overflow:hidden;transition:height 250ms">' +
-        '<input data-vfe-id="vfe_panel" aria-label="Hidden field" style="display:block;height:32px" /></div>',
-    );
-    const before = (await badgePoint(page, 'vfe_panel')) as Point;
+    // A collapsing panel above a field in normal flow: expanding it must push
+    // that field (and its badge) down while the transition runs.
+    await page.setContent(`
+      <html><body style="margin:0">
+        <div id="panel" style="height:0;overflow:hidden;transition:height 250ms">
+          <input data-vfe-id="vfe_panel" aria-label="Panel field" style="display:block;height:32px" />
+        </div>
+        <input data-vfe-id="vfe_below" aria-label="Below field" style="display:block;height:32px" />
+      </body></html>
+    `);
+    await page.addScriptTag({ path: bundlePath });
+    await page.evaluate(() => {
+      window.VfeBadgeHarness.mount();
+      window.VfeBadgeHarness.sync();
+    });
+
+    const before = (await badgePoint(page, 'vfe_below')) as Point;
     await page.evaluate(() => {
       (document.getElementById('panel') as HTMLElement).style.height = '120px';
     });
     await page.waitForTimeout(400);
-    const after = (await badgePoint(page, 'vfe_panel')) as Point;
-    expect(after.y).not.toBe(before.y);
+    const after = (await badgePoint(page, 'vfe_below')) as Point;
+    expect(after.y).toBeGreaterThan(before.y + 80);
+    await expectGlued(page, 'vfe_below');
   });
 
   test('is unaffected by host CSS resets', async ({ page }) => {
@@ -125,17 +138,31 @@ test.describe('badge overlay', () => {
       5,
       '<div style="position:fixed;inset:0;z-index:2147483645;background:rgba(0,0,0,.1)"></div>',
     );
-    const topmost = await page.evaluate(() => {
+    const stacking = await page.evaluate(() => {
       const host = document.querySelector('vfe-badges') as HTMLElement;
       const node = host.shadowRoot?.querySelector('[data-vfe-id="vfe_1"]') as HTMLElement;
       const rect = node.getBoundingClientRect();
+      const x = rect.x + 10;
+      const y = rect.y + 10;
       const root = host.shadowRoot as ShadowRoot & {
-        elementFromPoint?: (x: number, y: number) => Element | null;
+        elementFromPoint?: (px: number, py: number) => Element | null;
       };
-      const hit = root.elementFromPoint?.(rect.x + 10, rect.y + 10);
-      return { isBadge: hit === node, z: getComputedStyle(host).zIndex };
+
+      // By design the overlay is click-through, and hit testing ignores
+      // `pointer-events: none` elements — so the page overlay wins the probe.
+      const passthrough = document.elementFromPoint(x, y)?.getAttribute('style') ?? '';
+
+      // Flip pointer events for one probe to measure paint order instead.
+      node.style.pointerEvents = 'auto';
+      const hit = root.elementFromPoint?.(x, y) ?? null;
+      node.style.pointerEvents = '';
+      return {
+        passesThrough: passthrough.includes('z-index:2147483645'),
+        isBadge: hit === node,
+        z: getComputedStyle(host).zIndex,
+      };
     });
-    expect(topmost).toEqual({ isBadge: true, z: '2147483646' });
+    expect(stacking).toEqual({ passesThrough: true, isBadge: true, z: '2147483646' });
   });
 
   test('never steals a click from the page', async ({ page }) => {
