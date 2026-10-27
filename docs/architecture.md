@@ -139,7 +139,7 @@ This document holds the architectural decisions that the backlog depends on. Eac
 
 ## ADR-010 — Protocol change policy
 
-**Decision.** Within `1.x`, changes are additive only (new optional fields, new union members appended). Breaking changes bump the major version and require a migration note. Clients send `clientContext.protocolVersion`; the Brain rejects mismatched majors with `409`.
+**Decision.** `PROTOCOL_VERSION` starts at `1.0.0`. Within `1.x`, changes are additive only (new optional fields, new union members appended). Breaking changes bump the major version and require a migration note. Clients send `clientContext.protocolVersion`; the Brain rejects mismatched majors with `409`.
 
 **Why.** Five tracks depending on one contract need a stability promise, otherwise the "parallel tracks" model collapses into a merge queue.
 
