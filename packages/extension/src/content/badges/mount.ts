@@ -19,13 +19,17 @@ function defineElement(doc: Document): void {
 }
 
 function styleHost(host: HTMLElement): void {
-  host.style.position = 'fixed';
-  host.style.inset = '0';
-  host.style.width = '100vw';
-  host.style.height = '100vh';
-  host.style.zIndex = '2147483646';
-  host.style.pointerEvents = 'none';
-  host.style.display = 'block';
+  // `!important` keeps the overlay pinned on pages that reset every element.
+  const rules: Array<[string, string]> = [
+    ['position', 'fixed'],
+    ['inset', '0'],
+    ['width', '100vw'],
+    ['height', '100vh'],
+    ['z-index', '2147483646'],
+    ['pointer-events', 'none'],
+    ['display', 'block'],
+  ];
+  for (const [property, value] of rules) host.style.setProperty(property, value, 'important');
 }
 
 /**

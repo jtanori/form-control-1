@@ -42,6 +42,16 @@ test.describe('HUD CSS isolation', () => {
     expect(Math.round(box?.height ?? 0)).toBeGreaterThanOrEqual(43);
     expect(Math.round(box?.width ?? 0)).toBeGreaterThanOrEqual(43);
     await expect(page.locator(pill)).toBeVisible();
+    // The host must still sit at the bottom of the viewport, not in page flow.
+    const hostBox = await page.evaluate(() => {
+      const rect = (document.querySelector('vfe-hud') as HTMLElement).getBoundingClientRect();
+      return {
+        bottom: Math.round(rect.bottom),
+        position: getComputedStyle(document.querySelector('vfe-hud') as HTMLElement).position,
+      };
+    });
+    expect(hostBox.position).toBe('fixed');
+    expect(hostBox.bottom).toBeGreaterThan(600);
   });
 
   test('does not change host page styles', async ({ page }) => {
@@ -78,7 +88,12 @@ test.describe('HUD CSS isolation', () => {
         elementFromPoint?: (x: number, y: number) => Element | null;
       };
       const hit = root.elementFromPoint?.(rect.x + rect.width / 2, rect.y + rect.height / 2);
-      return { isPill: hit === pillElement, hostZ: getComputedStyle(host).zIndex };
+      // The centre of the pill may be one of its children; what matters is that
+      // the hit is inside our pill and not the page's overlay underneath.
+      return {
+        isPill: hit === pillElement || pillElement.contains(hit),
+        hostZ: getComputedStyle(host).zIndex,
+      };
     });
     expect(topmost).toEqual({ isPill: true, hostZ: '2147483647' });
   });

@@ -29,15 +29,20 @@ function defineElement(doc: Document): void {
 }
 
 function styleHost(host: HTMLElement): void {
-  host.style.position = 'fixed';
-  host.style.left = '0';
-  host.style.right = '0';
-  host.style.bottom = '24px';
-  host.style.display = 'block';
-  host.style.zIndex = '2147483647';
-  host.style.pointerEvents = 'none';
-  host.style.width = '100%';
-  host.style.height = 'auto';
+  // Inline styles use `!important` so a page-wide
+  // `* { all: unset !important }` cannot move or hide the HUD.
+  const rules: Array<[string, string]> = [
+    ['position', 'fixed'],
+    ['left', '0'],
+    ['right', '0'],
+    ['bottom', '24px'],
+    ['display', 'block'],
+    ['z-index', '2147483647'],
+    ['pointer-events', 'none'],
+    ['width', '100%'],
+    ['height', 'auto'],
+  ];
+  for (const [property, value] of rules) host.style.setProperty(property, value, 'important');
 }
 
 /**
