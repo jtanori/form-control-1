@@ -11,3 +11,7 @@ test-results
 .DS_Store
 .vscode
 .idea
+
+# generated e2e bundles
+*/.bundle
+packages/dom-engine/test/browser/.bundle

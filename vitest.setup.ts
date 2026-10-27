@@ -34,33 +34,39 @@ export interface MockLayoutConfig {
   clientRects?: number;
 }
 
-interface LayoutRecord extends MockLayoutConfig {
+interface LayoutRecord {
   width: number;
   height: number;
   top: number;
   left: number;
-  display: string;
-  visibility: string;
-  opacity: string;
-  contentVisibility: string;
-  color: string;
+  display?: string;
+  visibility?: string;
+  opacity?: string;
+  contentVisibility?: string;
+  color?: string;
+  clientRects?: number;
 }
 
 const records = new WeakMap<Element, LayoutRecord>();
 const patched = new Set<Element>();
 
 function toRecord(config: MockLayoutConfig): LayoutRecord {
+  // Only explicit style overrides are recorded: the real inline styles of the
+  // page must keep working (a fixture with `display:none` stays hidden even
+  // when its box is mocked).
   return {
     width: config.width ?? 120,
     height: config.height ?? 24,
     top: config.top ?? 0,
     left: config.left ?? 0,
-    display: config.display ?? 'block',
-    visibility: config.visibility ?? 'visible',
-    opacity: String(config.opacity ?? 1),
-    contentVisibility: config.contentVisibility ?? 'visible',
-    color: config.color ?? 'rgb(0, 0, 0)',
-    clientRects: config.clientRects,
+    ...(config.display === undefined ? {} : { display: config.display }),
+    ...(config.visibility === undefined ? {} : { visibility: config.visibility }),
+    ...(config.opacity === undefined ? {} : { opacity: String(config.opacity) }),
+    ...(config.contentVisibility === undefined
+      ? {}
+      : { contentVisibility: config.contentVisibility }),
+    ...(config.color === undefined ? {} : { color: config.color }),
+    ...(config.clientRects === undefined ? {} : { clientRects: config.clientRects }),
   };
 }
 
@@ -134,14 +140,14 @@ function fakeComputedStyle(el: Element, pseudo?: string | null): CSSStyleDeclara
   const base = originalGetComputedStyle(el, pseudo ?? undefined);
   const record = records.get(el);
   if (!record) return base;
-  const overrides: Record<string, string> = {
-    display: record.display,
-    visibility: record.visibility,
-    opacity: record.opacity,
-    contentVisibility: record.contentVisibility,
-    contentVisibilityValue: record.contentVisibility,
-    color: record.color,
-  };
+  const overrides: Record<string, string> = {};
+  if (record.display !== undefined) overrides.display = record.display;
+  if (record.visibility !== undefined) overrides.visibility = record.visibility;
+  if (record.opacity !== undefined) overrides.opacity = record.opacity;
+  if (record.contentVisibility !== undefined) {
+    overrides.contentVisibility = record.contentVisibility;
+  }
+  if (record.color !== undefined) overrides.color = record.color;
   return new Proxy(base, {
     get(target, prop) {
       if (typeof prop === 'string' && prop in overrides) return overrides[prop];
