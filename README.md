@@ -2,7 +2,10 @@
 
 Voice-driven form filling for the web. Say _"my name is Alice, email alice at wonderland dot com, and click Continue"_ — the assistant numbers every field on the page, listens, understands, and fills it in.
 
-This repository currently contains the **engineering blueprint and backlog** for the MVP. Implementation starts at ticket `P0-1`.
+Phase 0 (foundation) and all of Phase 1 (tracks A–E) are implemented: the
+protocol, the DOM eyes and hands, the brain, the edge proxy, the audio
+pipeline and the HUD/badge UI all have code, tests and docs. Phase 2
+(integration loop, recovery) and the QA testbed are next.
 
 ```text
 ┌──────────────────────────── Chrome MV3 extension ────────────────────────────┐
@@ -69,10 +72,12 @@ Issue titles are `[<ID>] <title>` so an agent can be told simply: _"implement `A
 
 ## Status
 
-|                |                                                           |
-| -------------- | --------------------------------------------------------- |
-| Planning       | ✅ complete (18 tickets, dependency-checked, agent-ready) |
-| Implementation | ⬜ not started — next: `P0-1`                             |
+|              |                                                           |
+| ------------ | --------------------------------------------------------- |
+| Planning     | ✅ complete (18 tickets, dependency-checked, agent-ready) |
+| Phase 0      | ✅ `P0-1` monorepo, `P0-2` frozen protocol 1.0.0          |
+| Phase 1      | ✅ `A-1…A-3`, `B-1…B-3`, `C-1…C-3`, `D-1…D-2`, `E-1…E-2`  |
+| Phase 2 / QA | ⬜ next: `INT-1`, `INT-2`, `QA-1`                         |
 
 ## License
 
