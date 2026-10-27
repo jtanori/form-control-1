@@ -1,5 +1,8 @@
+import { distillPage, watchPage } from '@vfe/dom-engine';
+
 import { AssistantMessageSchema, parseAudioEvent } from '../messaging';
 
+import { mountBadges } from './badges/mount';
 import { mountHud, type HudEvent } from './hud/mount';
 
 let listening = false;
@@ -96,3 +99,21 @@ async function maybeShowOnboardingHint(): Promise<void> {
 }
 
 void maybeShowOnboardingHint();
+
+/**
+ * E-2 badge overlay. Distillation is deferred to idle time because a page with
+ * hundreds of controls would otherwise compete with first paint; the watcher
+ * then keeps numbers glued to re-rendered fields.
+ */
+function startBadges(): void {
+  if (!document.querySelector('input, select, textarea, [contenteditable="true"]')) return;
+  const badges = mountBadges();
+  badges.sync(distillPage());
+  watchPage((change) => badges.sync(change.pageState), { observerDebounceMs: 300 }).start();
+}
+
+const idleCallback =
+  (globalThis as unknown as { requestIdleCallback?: (callback: () => void) => void })
+    .requestIdleCallback ?? ((callback: () => void) => setTimeout(callback, 200));
+
+idleCallback(startBadges);

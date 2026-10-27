@@ -61,3 +61,8 @@ follows Keep a Changelog; the project is pre-1.0 and ships from `main`.
   light/dark handling, fixed-bar and focused-input collision avoidance, a capped
   remount guard and a 3.9 KB gzip budget. Content scripts are lint- and
   CI-forbidden from assigning HTML strings.
+- **Numbered badge overlay (E-2):** a shadow-DOM overlay that numbers every
+  discovered control with a single node per `vfeId`; id-diffed `sync()` with a
+  zero-write idle path, read/write-split positioning on one shared rAF, 250-badge
+  cap, flash states driven by action results, viewport clamping, scroll/resize/
+  accordion following and a Playwright glue-and-frame-rate suite.

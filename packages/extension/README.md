@@ -46,7 +46,12 @@ cannot reach into it and its own styles cannot leak out. It renders six states,
 the live transcript, execution progress and errors, and it is the only place the
 user sees what the assistant is doing.
 
+A second shadow root numbers every discovered control so the user can say "field
+4" out loud; it is `pointer-events: none` and never steals a click.
+
 See [`docs/extension/hud.md`](../../docs/extension/hud.md) for the HUD,
+[`docs/extension/badges.md`](../../docs/extension/badges.md) for the badge
+overlay,
 [`docs/extension/audio-pipeline.md`](../../docs/extension/audio-pipeline.md) for
 capture, [`docs/extension/stt-tts.md`](../../docs/extension/stt-tts.md) for
 STT/TTS, the latency budget and Chrome workarounds.
