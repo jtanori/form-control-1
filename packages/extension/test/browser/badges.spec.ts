@@ -98,7 +98,8 @@ test.describe('badge overlay', () => {
         <div id="panel" style="height:0;overflow:hidden;transition:height 250ms">
           <input data-vfe-id="vfe_panel" aria-label="Panel field" style="display:block;height:32px" />
         </div>
-        <input data-vfe-id="vfe_below" aria-label="Below field" style="display:block;height:32px" />
+        <input data-vfe-id="vfe_below" aria-label="Below field"
+               style="display:block;height:32px;margin-left:80px" />
       </body></html>
     `);
     await page.addScriptTag({ path: bundlePath });
@@ -114,6 +115,7 @@ test.describe('badge overlay', () => {
     await page.waitForTimeout(400);
     const after = (await badgePoint(page, 'vfe_below')) as Point;
     expect(after.y).toBeGreaterThan(before.y + 80);
+    // Its badge sits just outside the field's top-left corner (not clamped at 0).
     await expectGlued(page, 'vfe_below');
   });
 
