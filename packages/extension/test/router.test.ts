@@ -6,7 +6,7 @@ import type { AudioEvent, SpeechEndEvent } from '../src/messaging';
 
 const RUNTIME_ID = 'extension-runtime-id';
 
-function setup() {
+function setup(options: { onOpenSettings?: () => { ok: boolean } } = {}) {
   let open = false;
   const api: OffscreenApi = {
     hasDocument: vi.fn(async () => open),
@@ -29,6 +29,7 @@ function setup() {
     broadcast,
     onSpeechEnd,
     onTtsMessage,
+    ...(options.onOpenSettings ? { onOpenSettings: options.onOpenSettings } : {}),
   });
   return { api, manager, sendToOffscreen, broadcast, onSpeechEnd, onTtsMessage, router };
 }
@@ -132,5 +133,26 @@ describe('message router', () => {
       { id: RUNTIME_ID },
     );
     expect(router.isListening()).toBe(false);
+  });
+});
+
+describe('HUD settings intent', () => {
+  it('routes OPEN_SETTINGS to the settings opener', async () => {
+    let opened = 0;
+    const { router } = setup({
+      onOpenSettings: () => {
+        opened += 1;
+        return { ok: true };
+      },
+    });
+    const result = await router.handleMessage({ type: 'OPEN_SETTINGS' }, { id: RUNTIME_ID });
+    expect(result).toEqual({ ok: true });
+    expect(opened).toBe(1);
+  });
+
+  it('reports UNKNOWN_MESSAGE when no settings opener is wired', async () => {
+    const { router } = setup();
+    const result = await router.handleMessage({ type: 'OPEN_SETTINGS' }, { id: RUNTIME_ID });
+    expect(result).toEqual({ ok: false, error: 'UNKNOWN_MESSAGE' });
   });
 });

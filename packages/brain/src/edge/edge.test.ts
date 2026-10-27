@@ -2,7 +2,6 @@ import { ProcessCommandRequestSchema } from '@vfe/protocol';
 import { checkoutPageState } from '@vfe/protocol/fixtures';
 import { describe, expect, it } from 'vitest';
 
-
 import { silentLogger, type BrainLogger } from '../logger';
 
 import { createEdgeApp, isOriginAllowed } from './app';

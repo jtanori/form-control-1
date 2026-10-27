@@ -8,8 +8,15 @@
  * lying to itself: a test that forgets to call it will fail, which is exactly
  * what ADR-007 asks for.
  */
-import '@testing-library/jest-dom/vitest';
 import { afterEach, beforeEach, expect } from 'vitest';
+
+const isDomEnvironment = typeof window !== 'undefined' && typeof document !== 'undefined';
+
+// A handful of tests run in the `node` environment (bundle budgets, file
+// scans); they get no DOM shims and no DOM matchers.
+if (isDomEnvironment) {
+  await import('@testing-library/jest-dom/vitest');
+}
 
 export interface MockLayoutConfig {
   /** Border-box width in px. Default 120. */
@@ -126,6 +133,7 @@ export function mockLayout<T extends Element>(el: T, config: MockLayoutConfig = 
 
 /** Remove every synthetic layout box installed by `mockLayout`. */
 export function resetLayoutMocks(): void {
+  if (!isDomEnvironment) return;
   for (const el of patched) {
     Reflect.deleteProperty(el, 'getBoundingClientRect');
     Reflect.deleteProperty(el, 'getClientRects');
@@ -134,9 +142,12 @@ export function resetLayoutMocks(): void {
   patched.clear();
 }
 
-const originalGetComputedStyle = window.getComputedStyle.bind(window);
+const originalGetComputedStyle: typeof window.getComputedStyle | null = isDomEnvironment
+  ? window.getComputedStyle.bind(window)
+  : null;
 
 function fakeComputedStyle(el: Element, pseudo?: string | null): CSSStyleDeclaration {
+  if (!originalGetComputedStyle) throw new Error('getComputedStyle needs the jsdom environment');
   const base = originalGetComputedStyle(el, pseudo ?? undefined);
   const record = records.get(el);
   if (!record) return base;
@@ -171,14 +182,14 @@ function fakeComputedStyle(el: Element, pseudo?: string | null): CSSStyleDeclara
 
 // jsdom does not expose a writable `innerWidth`/`innerHeight` from CSS; pin a
 // deterministic viewport so off-screen scores are stable across runs.
-if (!Object.getOwnPropertyDescriptor(window, 'innerWidth')?.configurable) {
+if (isDomEnvironment && !Object.getOwnPropertyDescriptor(window, 'innerWidth')?.configurable) {
   Object.defineProperty(window, 'innerWidth', {
     configurable: true,
     writable: true,
     value: 1024,
   });
 }
-if (!Object.getOwnPropertyDescriptor(window, 'innerHeight')?.configurable) {
+if (isDomEnvironment && !Object.getOwnPropertyDescriptor(window, 'innerHeight')?.configurable) {
   Object.defineProperty(window, 'innerHeight', {
     configurable: true,
     writable: true,
@@ -187,11 +198,13 @@ if (!Object.getOwnPropertyDescriptor(window, 'innerHeight')?.configurable) {
 }
 
 beforeEach(() => {
+  if (!isDomEnvironment) return;
   window.getComputedStyle = ((el: Element, pseudo?: string | null) =>
     fakeComputedStyle(el, pseudo)) as typeof window.getComputedStyle;
 });
 
 afterEach(() => {
+  if (!isDomEnvironment) return;
   resetLayoutMocks();
   document.body.innerHTML = '';
   document.head.innerHTML = '';

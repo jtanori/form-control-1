@@ -83,6 +83,14 @@ const router = createMessageRouter({
       });
     }
   },
+  onOpenSettings: async () => {
+    try {
+      await chrome.tabs.create({ url: chrome.runtime.getURL('popup.html') });
+      return { ok: true };
+    } catch {
+      return { ok: false, error: 'OPEN_SETTINGS_FAILED' };
+    }
+  },
   onTtsMessage: async (message: TtsMessage) => {
     try {
       await manager.ensure();

@@ -27,6 +27,11 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm build
       - run: pnpm test -- --coverage
+      - name: Content scripts never assign HTML
+        run: |
+          if grep -rnE "\.(inner|outer)HTML|insertAdjacentHTML|document\.write" packages/extension/src/content; then
+            echo "Untrusted HUD text must be rendered with textContent"; exit 1
+          fi
       - name: Extension ships zero credentials
         run: |
           if grep -rniE "sk-[a-z0-9]|GROQ_API_KEY|DEEPGRAM|OPENAI_API_KEY" packages/extension/src packages/extension/public; then

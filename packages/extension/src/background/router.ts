@@ -4,6 +4,7 @@ import {
   isTrustedSender,
   parseAudioCommand,
   parseAudioEvent,
+  parseSettingsMessage,
   parseTtsMessage,
   type AudioCommand,
   type AudioEvent,
@@ -24,6 +25,8 @@ export interface RouterDeps {
   onSpeechEnd?: (event: SpeechEndEvent) => Promise<void> | void;
   /** TTS is forwarded to the offscreen document, which owns speechSynthesis. */
   onTtsMessage?: (message: TtsMessage) => Promise<RouterResult> | RouterResult;
+  /** The HUD's "grant microphone access" path opens the settings page. */
+  onOpenSettings?: () => Promise<RouterResult> | RouterResult;
 }
 
 export interface RouterResult {
@@ -115,6 +118,8 @@ export function createMessageRouter(deps: RouterDeps): MessageRouter {
   return {
     async handleMessage(message, sender) {
       if (!isTrustedSender(sender, deps.runtimeId)) return fail('UNTRUSTED_SENDER');
+
+      if (parseSettingsMessage(message).ok && deps.onOpenSettings) return deps.onOpenSettings();
 
       const tts = parseTtsMessage(message);
       if (tts.ok && deps.onTtsMessage) return deps.onTtsMessage(tts.value);

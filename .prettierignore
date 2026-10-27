@@ -1,0 +1,7 @@
+pnpm-lock.yaml
+**/dist/**
+**/coverage/**
+.turbo
+packages/extension/public/vad/**
+**/.bundle/**
+packages/brain/evals/report.*

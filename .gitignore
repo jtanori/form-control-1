@@ -13,8 +13,7 @@ test-results
 .idea
 
 # generated e2e bundles
-*/.bundle
-packages/dom-engine/test/browser/.bundle
+**/.bundle/
 
 # generated eval artifacts (reports are uploaded by CI, baseline is committed)
 packages/brain/evals/report.json

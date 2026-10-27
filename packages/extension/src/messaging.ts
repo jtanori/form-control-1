@@ -113,6 +113,18 @@ export function parseTtsMessage(raw: unknown): ParseResult<TtsMessage> {
     : { ok: false, error: 'INVALID_TTS_MESSAGE' };
 }
 
+/** Content-script UI intent that is not audio: the HUD asks for the popup. */
+export const SettingsMessageSchema = z.object({ type: z.literal('OPEN_SETTINGS') }).strict();
+
+export type SettingsMessage = z.infer<typeof SettingsMessageSchema>;
+
+export function parseSettingsMessage(raw: unknown): ParseResult<SettingsMessage> {
+  const parsed = SettingsMessageSchema.safeParse(raw);
+  return parsed.success
+    ? { ok: true, value: parsed.data }
+    : { ok: false, error: 'INVALID_SETTINGS_MESSAGE' };
+}
+
 export function parseAudioEvent(raw: unknown): ParseResult<AudioEvent> {
   const parsed = AudioEventSchema.safeParse(raw);
   return parsed.success

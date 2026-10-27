@@ -13,6 +13,7 @@ export default tseslint.config(
       '**/test-results/**',
       'packages/extension/dist/**',
       'packages/extension/public/vad/**',
+      'packages/extension/test/browser/.bundle/**',
       'node_modules/**',
     ],
   },
@@ -43,6 +44,33 @@ export default tseslint.config(
         },
       ],
       'no-console': 'warn',
+    },
+  },
+  {
+    // Acceptance criterion E-1: untrusted strings (STT output, model output,
+    // page text) must never be assigned as markup.
+    files: ['packages/extension/src/content/**/*.ts'],
+    rules: {
+      'no-restricted-properties': [
+        'error',
+        {
+          object: 'document',
+          property: 'write',
+          message: 'Content scripts must render with DOM APIs.',
+        },
+      ],
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector:
+            'AssignmentExpression > MemberExpression.left[property.name=/^(inner|outer)HTML$/]',
+          message: 'Use textContent/DOM builders: content-script text is untrusted.',
+        },
+        {
+          selector: "CallExpression[callee.property.name='insertAdjacentHTML']",
+          message: 'Use textContent/DOM builders: content-script text is untrusted.',
+        },
+      ],
     },
   },
   {

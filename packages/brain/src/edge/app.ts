@@ -7,7 +7,6 @@ import {
 } from '@vfe/protocol';
 import { Hono, type Context } from 'hono';
 
-
 import { createConsoleLogger, silentLogger, type BrainLogger } from '../logger';
 
 import type { EdgeConfig } from './config';

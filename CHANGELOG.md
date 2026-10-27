@@ -55,3 +55,9 @@ follows Keep a Changelog; the project is pre-1.0 and ships from `main`.
   `speechSynthesis` with locale-aware voice selection, 250 ms VAD mute tail,
   cancellation and `<redacted>` stripping; zod-validated sync settings and a
   popup settings UI.
+- **Shadow-DOM HUD (E-1):** an isolated bottom-centre status pill rendered in an
+  open shadow root on `<html>` — six states, live transcript preview, execution
+  progress, keyboard and screen-reader support, reduced-motion and
+  light/dark handling, fixed-bar and focused-input collision avoidance, a capped
+  remount guard and a 3.9 KB gzip budget. Content scripts are lint- and
+  CI-forbidden from assigning HTML strings.

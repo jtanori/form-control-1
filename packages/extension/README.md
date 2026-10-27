@@ -41,6 +41,12 @@ Speech-to-text and text-to-speech clients live in `src/audio/stt.ts` and
 provider keys), retry within bounds, and speak from the offscreen document so TTS
 keeps working while the tab is backgrounded.
 
-See [`docs/extension/audio-pipeline.md`](../../docs/extension/audio-pipeline.md)
-for capture, [`docs/extension/stt-tts.md`](../../docs/extension/stt-tts.md) for
+The status pill is a shadow-DOM component mounted on `<html>`: host page CSS
+cannot reach into it and its own styles cannot leak out. It renders six states,
+the live transcript, execution progress and errors, and it is the only place the
+user sees what the assistant is doing.
+
+See [`docs/extension/hud.md`](../../docs/extension/hud.md) for the HUD,
+[`docs/extension/audio-pipeline.md`](../../docs/extension/audio-pipeline.md) for
+capture, [`docs/extension/stt-tts.md`](../../docs/extension/stt-tts.md) for
 STT/TTS, the latency budget and Chrome workarounds.
