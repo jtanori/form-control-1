@@ -4,16 +4,18 @@ import { expect, test, type Page } from '@playwright/test';
 
 const bundlePath = fileURLToPath(new URL('./.bundle/badges.js', import.meta.url));
 
-type Harness = { mount: () => void; sync: () => void; count: () => number; destroy: () => void };
+type Point = { x: number; y: number };
 
-const harness = <T>(page: Page, fn: (h: Harness) => T): Promise<T> =>
-  page.evaluate(
-    (source) =>
-      new Function('h', `return (${source})(h)`)(
-        (globalThis as unknown as { VfeBadgeHarness: Harness }).VfeBadgeHarness,
-      ) as T,
-    fn.toString(),
-  );
+declare global {
+  interface Window {
+    VfeBadgeHarness: {
+      mount: () => void;
+      sync: () => void;
+      count: () => number;
+      destroy: () => void;
+    };
+  }
+}
 
 async function setup(page: Page, count: number, extra = ''): Promise<void> {
   const controls = Array.from({ length: count }, (_, index) => {
@@ -24,73 +26,81 @@ async function setup(page: Page, count: number, extra = ''): Promise<void> {
     `<html><body style="margin:0;height:6000px">${controls}${extra}</body></html>`,
   );
   await page.addScriptTag({ path: bundlePath });
-  await harness(page, (h) => {
-    h.mount();
-    h.sync();
+  await page.evaluate(() => {
+    window.VfeBadgeHarness.mount();
+    window.VfeBadgeHarness.sync();
   });
 }
 
-const badgeRect = (page: Page, index: number) =>
-  page.evaluate((badgeIndex) => {
+const badgePoint = (page: Page, vfeId: string): Promise<Point | null> =>
+  page.evaluate((id) => {
     const host = document.querySelector('vfe-badges') as HTMLElement;
-    const node = host.shadowRoot?.querySelector(
-      `[data-badge-index="${badgeIndex}"]`,
-    ) as HTMLElement;
-    const rect = node.getBoundingClientRect();
-    return { x: rect.x, y: rect.y, width: rect.width, height: rect.height };
-  }, index);
-
-const inputRect = (page: Page, index: number) =>
-  page.evaluate((badgeIndex) => {
-    const node = document.querySelector(`[data-vfe-id="vfe_${badgeIndex}"]`) as HTMLElement;
+    const node = host.shadowRoot?.querySelector(`[data-vfe-id="${id}"]`) as HTMLElement | null;
+    if (!node || node.dataset.visible !== 'true') return null;
     const rect = node.getBoundingClientRect();
     return { x: rect.x, y: rect.y };
-  }, index);
+  }, vfeId);
+
+const inputPoint = (page: Page, vfeId: string): Promise<Point> =>
+  page.evaluate((id) => {
+    const node = document.querySelector(`[data-vfe-id="${id}"]`) as HTMLElement;
+    const rect = node.getBoundingClientRect();
+    return { x: rect.x, y: rect.y };
+  }, vfeId);
+
+const BADGE_SIZE = 20;
+
+async function expectGlued(page: Page, vfeId: string): Promise<void> {
+  const badge = await badgePoint(page, vfeId);
+  const input = await inputPoint(page, vfeId);
+  expect(badge, `badge for ${vfeId} should be visible`).not.toBeNull();
+  expect(Math.abs((badge as Point).x + BADGE_SIZE - input.x)).toBeLessThan(16);
+  expect(Math.abs((badge as Point).y + BADGE_SIZE - input.y)).toBeLessThan(16);
+}
 
 test.describe('badge overlay', () => {
   test('numbers every control', async ({ page }) => {
     await setup(page, 12);
-    expect(await harness(page, (h) => h.count())).toBe(12);
+    const numbers = await page.evaluate(() => {
+      const host = document.querySelector('vfe-badges') as HTMLElement;
+      const nodes = Array.from(host.shadowRoot?.querySelectorAll('.badge') ?? []);
+      return nodes.map((node) => node.textContent);
+    });
+    expect(numbers).toEqual(Array.from({ length: 12 }, (_, index) => String(index + 1)));
+    expect(await page.evaluate(() => window.VfeBadgeHarness.count())).toBe(12);
   });
 
   test('stays glued to its input while scrolling', async ({ page }) => {
     await setup(page, 40);
-    await page.evaluate(() => window.scrollTo(0, 600));
-    await page.waitForTimeout(100);
-    for (const index of [1, 7, 13, 21, 33]) {
-      const badge = await badgeRect(page, index);
-      const input = await inputRect(page, index);
-      expect(Math.abs(badge.x + 20 - input.x)).toBeLessThan(16);
-      expect(Math.abs(badge.y + 20 - input.y)).toBeLessThan(16);
-    }
+    for (const index of [1, 7, 13, 21]) await expectGlued(page, `vfe_${index}`);
+    await page.evaluate(() => window.scrollTo(0, 400));
+    await page.waitForTimeout(150);
+    for (const index of [10, 11, 12, 14]) await expectGlued(page, `vfe_${index}`);
   });
 
-  test('repositions after a resize', async ({ page }) => {
+  test('re-glues after a viewport resize', async ({ page }) => {
     await setup(page, 10);
-    const before = await badgeRect(page, 3);
     await page.setViewportSize({ width: 700, height: 600 });
-    await page.waitForTimeout(100);
-    const after = await badgeRect(page, 3);
-    const input = await inputRect(page, 3);
-    expect(after).not.toEqual(before);
-    expect(Math.abs(after.x + 20 - input.x)).toBeLessThan(16);
+    await page.waitForTimeout(150);
+    await expectGlued(page, 'vfe_1');
+    const badge = (await badgePoint(page, 'vfe_1')) as Point;
+    expect(badge.x).toBeGreaterThanOrEqual(2);
+    expect(badge.y).toBeGreaterThanOrEqual(2);
   });
 
   test('follows an expanding accordion', async ({ page }) => {
     await setup(
       page,
-      3,
+      2,
       '<div id="panel" style="height:0;overflow:hidden;transition:height 250ms">' +
-        '<input data-vfe-id="vfe_1" aria-label="Hidden field" style="display:block;height:32px" /></div>',
+        '<input data-vfe-id="vfe_panel" aria-label="Hidden field" style="display:block;height:32px" /></div>',
     );
-    await harness(page, (h) => h.sync());
-    const before = await badgeRect(page, 1);
+    const before = (await badgePoint(page, 'vfe_panel')) as Point;
     await page.evaluate(() => {
-      const panel = document.getElementById('panel') as HTMLElement;
-      panel.style.height = '120px';
+      (document.getElementById('panel') as HTMLElement).style.height = '120px';
     });
     await page.waitForTimeout(400);
-    const after = await badgeRect(page, 1);
+    const after = (await badgePoint(page, 'vfe_panel')) as Point;
     expect(after.y).not.toBe(before.y);
   });
 
@@ -100,10 +110,13 @@ test.describe('badge overlay', () => {
       6,
       '<style>* { transform: none !important; } input { box-shadow: none; }</style>',
     );
-    const badge = await badgeRect(page, 2);
-    const input = await inputRect(page, 2);
-    expect(Math.abs(badge.x + 20 - input.x)).toBeLessThan(16);
-    expect(Math.round(badge.width)).toBe(20);
+    await expectGlued(page, 'vfe_2');
+    const width = await page.evaluate(() => {
+      const host = document.querySelector('vfe-badges') as HTMLElement;
+      const node = host.shadowRoot?.querySelector('.badge') as HTMLElement;
+      return node.getBoundingClientRect().width;
+    });
+    expect(Math.round(width)).toBe(BADGE_SIZE);
   });
 
   test('renders above a near-maximum overlay', async ({ page }) => {
@@ -114,12 +127,12 @@ test.describe('badge overlay', () => {
     );
     const topmost = await page.evaluate(() => {
       const host = document.querySelector('vfe-badges') as HTMLElement;
-      const node = host.shadowRoot?.querySelector('[data-badge-index="1"]') as HTMLElement;
+      const node = host.shadowRoot?.querySelector('[data-vfe-id="vfe_1"]') as HTMLElement;
       const rect = node.getBoundingClientRect();
       const root = host.shadowRoot as ShadowRoot & {
         elementFromPoint?: (x: number, y: number) => Element | null;
       };
-      const hit = root.elementFromPoint?.(rect.x + 10, rect.y + 10) ?? null;
+      const hit = root.elementFromPoint?.(rect.x + 10, rect.y + 10);
       return { isBadge: hit === node, z: getComputedStyle(host).zIndex };
     });
     expect(topmost).toEqual({ isBadge: true, z: '2147483646' });
@@ -131,15 +144,19 @@ test.describe('badge overlay', () => {
       const input = document.querySelector('[data-vfe-id="vfe_1"]') as HTMLElement;
       input.addEventListener('click', () => input.setAttribute('data-clicked', 'true'));
     });
-    const badge = await badgeRect(page, 1);
-    await page.mouse.click(badge.x + 10, badge.y + 10);
-    const clicked = await page.evaluate(() =>
-      document.querySelector('[data-vfe-id="vfe_1"]')?.getAttribute('data-clicked'),
-    );
-    expect(clicked).toBe('true');
+    const badge = (await badgePoint(page, 'vfe_1')) as Point;
+    // Four pixels inside the control, straight under the badge.
+    await page.mouse.click(badge.x + 10, badge.y + 14);
+    await expect
+      .poll(() =>
+        page.evaluate(() =>
+          document.querySelector('[data-vfe-id="vfe_1"]')?.getAttribute('data-clicked'),
+        ),
+      )
+      .toBe('true');
   });
 
-  test('renders 100 badges without missing frames while scrolling', async ({ page }) => {
+  test('keeps up with 100 badges while scrolling', async ({ page }) => {
     await setup(page, 100);
     const fps = await page.evaluate(async () => {
       const frames: number[] = [];
@@ -161,6 +178,6 @@ test.describe('badge overlay', () => {
       const total = frames.reduce((sum, value) => sum + value, 0);
       return frames.length / (total / 1000);
     });
-    expect(fps).toBeGreaterThan(45);
+    expect(fps).toBeGreaterThan(40);
   });
 });

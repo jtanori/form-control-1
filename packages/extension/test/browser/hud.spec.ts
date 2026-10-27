@@ -6,26 +6,30 @@ const bundlePath = fileURLToPath(new URL('./.bundle/hud.js', import.meta.url));
 
 const pill = 'vfe-hud >> .pill';
 
-async function inject(page: Page): Promise<void> {
-  await page.addScriptTag({ path: bundlePath });
-  await page.evaluate(() => {
-    (globalThis as unknown as { VfeHudHarness: { mount: () => void } }).VfeHudHarness.mount();
-  });
-}
-
 type Harness = {
   events: Array<{ type: string }>;
+  mount: () => void;
+  destroy: () => void;
   setStatus: (status: string) => void;
+  setMessage: (text: string) => void;
 };
 
-const harnessEval = <T>(page: Page, fn: (harness: Harness) => T): Promise<T> =>
-  page.evaluate(
-    (source) =>
-      new Function('h', `return (${source})(h)`)(
-        (globalThis as unknown as { VfeHudHarness: Harness }).VfeHudHarness,
-      ) as T,
-    fn.toString(),
-  );
+declare global {
+  interface Window {
+    VfeHudHarness: Harness;
+  }
+}
+
+async function inject(page: Page): Promise<void> {
+  await page.addScriptTag({ path: bundlePath });
+  await page.evaluate(() => window.VfeHudHarness.mount());
+}
+
+const status = (page: Page, value: string): Promise<void> =>
+  page.evaluate((next) => window.VfeHudHarness.setStatus(next), value);
+
+const events = (page: Page): Promise<string[]> =>
+  page.evaluate(() => window.VfeHudHarness.events.map((event) => event.type));
 
 test.describe('HUD CSS isolation', () => {
   test('survives an aggressive host reset', async ({ page }) => {
@@ -73,8 +77,7 @@ test.describe('HUD CSS isolation', () => {
       const root = host.shadowRoot as ShadowRoot & {
         elementFromPoint?: (x: number, y: number) => Element | null;
       };
-      const hit =
-        root.elementFromPoint?.(rect.x + rect.width / 2, rect.y + rect.height / 2) ?? null;
+      const hit = root.elementFromPoint?.(rect.x + rect.width / 2, rect.y + rect.height / 2);
       return { isPill: hit === pillElement, hostZ: getComputedStyle(host).zIndex };
     });
     expect(topmost).toEqual({ isPill: true, hostZ: '2147483647' });
@@ -85,6 +88,7 @@ test.describe('HUD CSS isolation', () => {
     await inject(page);
     const before = await page.locator(pill).boundingBox();
     await page.evaluate(() => window.scrollTo(0, 2000));
+    await page.waitForTimeout(100);
     const after = await page.locator(pill).boundingBox();
     expect(Math.round(after?.y ?? 0)).toBe(Math.round(before?.y ?? 0));
     expect(Math.round(after?.x ?? 0)).toBe(Math.round(before?.x ?? 0));
@@ -94,7 +98,7 @@ test.describe('HUD CSS isolation', () => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.setContent('<html><body><h1>calm</h1></body></html>');
     await inject(page);
-    await harnessEval(page, (harness) => harness.setStatus('listening'));
+    await status(page, 'listening');
     const animation = await page.evaluate(() => {
       const host = document.querySelector('vfe-hud') as HTMLElement;
       const bar = host.shadowRoot?.querySelector('.wave span') as HTMLElement;
@@ -106,10 +110,8 @@ test.describe('HUD CSS isolation', () => {
   test('is keyboard operable', async ({ page }) => {
     await page.setContent('<html><body><h1>keys</h1></body></html>');
     await inject(page);
-    await harnessEval(page, (harness) => harness.setStatus('listening'));
+    await status(page, 'listening');
     await page.keyboard.press('Escape');
-    await expect
-      .poll(async () => harnessEval(page, (harness) => harness.events.map((event) => event.type)))
-      .toEqual(['hud:stop']);
+    await expect.poll(() => events(page)).toEqual(['hud:stop']);
   });
 });

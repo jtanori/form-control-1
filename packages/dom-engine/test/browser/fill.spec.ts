@@ -1,9 +1,13 @@
 import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import { expect, test, type Page } from '@playwright/test';
 
-const bundle = readFileSync(join(__dirname, '.bundle/dom-engine.js'), 'utf8');
+// Playwright loads specs as ESM (`"type": "module"`), where `__dirname` does not exist.
+const bundle = readFileSync(
+  fileURLToPath(new URL('./.bundle/dom-engine.js', import.meta.url)),
+  'utf8',
+);
 
 declare global {
   interface Window {
