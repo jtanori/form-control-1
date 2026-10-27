@@ -44,6 +44,8 @@ export const ProcessCommandResponseSchema = z.object({
     model: z.string(),
     latencyMs: z.number(),
     requestId: z.string(),
+    cached: z.boolean().optional(),
+    promptVersion: z.string().optional(),
   }),
 });
 

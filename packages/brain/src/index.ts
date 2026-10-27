@@ -1,1 +1,11 @@
-export const BRAIN_VERSION = '0.0.0-pending' as const;
+export { createApp, type AppOptions } from './app';
+export { loadConfig, BrainConfigSchema, type BrainConfig } from './config';
+export { createProvider } from './llm/factory';
+export { AnthropicProvider } from './llm/anthropic';
+export { MockProvider } from './llm/mock';
+export { OpenAiProvider } from './llm/openai';
+export { ProviderError, type LlmProvider } from './llm/types';
+export { createConsoleLogger, silentLogger, type BrainLogger } from './logger';
+export { processCommand, resetBrainState, type BrainDeps, type BrainResult } from './service';
+export { buildMessages, buildUserMessage } from './prompt/user-message';
+export { buildSystemPrompt, SYSTEM_PROMPT_VERSION } from './prompt/system';
