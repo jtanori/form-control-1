@@ -1,0 +1,21 @@
+{
+  "id": "unknown-field-refusal",
+  "title": "No matching field means no action",
+  "tags": ["refusal", "p0"],
+  "pageState": "wizard-step-2",
+  "history": [],
+  "transcript": "fill in my passport number",
+  "expect": {
+    "actions": [],
+    "allowExtraActions": false,
+    "allowOrderChange": true,
+    "spokenFeedback": {
+      "minLength": 10
+    }
+  },
+  "mock": {
+    "thoughtProcess": "There is no passport field on this page, so nothing can be targeted.",
+    "spokenFeedback": "I couldn't find a passport number field on this page.",
+    "actions": []
+  }
+}

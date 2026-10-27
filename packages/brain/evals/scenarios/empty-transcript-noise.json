@@ -1,0 +1,21 @@
+{
+  "id": "empty-transcript-noise",
+  "title": "Filler words produce no actions",
+  "tags": ["noise", "empty"],
+  "pageState": "wizard-step-2",
+  "history": [],
+  "transcript": "um\u2026 uh\u2026 never mind",
+  "expect": {
+    "actions": [],
+    "allowExtraActions": false,
+    "allowOrderChange": true,
+    "spokenFeedback": {
+      "minLength": 5
+    }
+  },
+  "mock": {
+    "thoughtProcess": "No actionable request was made.",
+    "spokenFeedback": "No problem \u2014 let me know when you're ready.",
+    "actions": []
+  }
+}

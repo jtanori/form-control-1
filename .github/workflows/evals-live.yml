@@ -1,0 +1,67 @@
+name: Brain evals (live)
+
+on:
+  schedule:
+    - cron: '17 6 * * *' # nightly, 06:17 UTC
+  workflow_dispatch:
+    inputs:
+      repeat:
+        description: Runs per scenario (stability)
+        default: '3'
+
+concurrency:
+  group: evals-live
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  eval:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.12.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - name: Run live evals
+        id: evals
+        continue-on-error: true
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          LLM_PROVIDER: openai
+          LLM_MODEL: gpt-4o-mini
+          LLM_TEMPERATURE: '0'
+          EVAL_REPEAT: ${{ github.event.inputs.repeat || '3' }}
+          EVAL_MAX_COST_USD: '0.50'
+        run: pnpm --filter @vfe/brain eval:live
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: brain-eval-live
+          path: packages/brain/evals/report.live.*
+          if-no-files-found: warn
+      - name: Open or update regression issue
+        if: steps.evals.outcome == 'failure'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          title="Brain eval regression"
+          body="The nightly live eval fell below the 93% baseline. See the \`brain-eval-live\` artifact on run ${GITHUB_RUN_ID}."
+          existing=$(gh issue list --state open --search "$title in:title" --json number --jq '.[0].number')
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" --body "$body"
+          else
+            gh issue create --title "$title" --body "$body"
+          fi
+      - name: Fail the job
+        if: steps.evals.outcome == 'failure'
+        run: exit 1

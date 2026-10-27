@@ -1,0 +1,32 @@
+{
+  "id": "validation-error-context",
+  "title": "A visible validation error must not trigger submit",
+  "tags": ["validation", "clarification"],
+  "pageState": "wizard-step-2",
+  "history": [],
+  "transcript": "make it longer",
+  "expect": {
+    "actions": [
+      {
+        "action": "ASK_CLARIFICATION"
+      }
+    ],
+    "allowExtraActions": false,
+    "allowOrderChange": true,
+    "clarificationMustMention": ["password"],
+    "forbidActions": ["CLICK"],
+    "spokenFeedback": {
+      "minLength": 10
+    }
+  },
+  "mock": {
+    "thoughtProcess": "The password field shows a length error, but no new password was dictated. Ask instead of inventing a secret.",
+    "spokenFeedback": "What password would you like? It needs at least eight characters.",
+    "actions": [
+      {
+        "action": "ASK_CLARIFICATION",
+        "questionToUser": "What password would you like? Password must be at least 8 characters."
+      }
+    ]
+  }
+}

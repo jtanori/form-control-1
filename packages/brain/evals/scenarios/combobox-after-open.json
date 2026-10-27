@@ -1,0 +1,33 @@
+{
+  "id": "combobox-after-open",
+  "title": "Opened combobox selects the real option",
+  "tags": ["combobox"],
+  "pageState": "combobox-expanded",
+  "history": [],
+  "transcript": "select California",
+  "expect": {
+    "actions": [
+      {
+        "action": "SELECT",
+        "target": {
+          "label": "State",
+          "groupLabel": "Address"
+        },
+        "value": "CA"
+      }
+    ],
+    "allowExtraActions": false,
+    "allowOrderChange": true
+  },
+  "mock": {
+    "thoughtProcess": "Options are populated and California maps to the value CA.",
+    "spokenFeedback": "Selected California.",
+    "actions": [
+      {
+        "action": "SELECT",
+        "targetId": "vfe_1",
+        "value": "CA"
+      }
+    ]
+  }
+}

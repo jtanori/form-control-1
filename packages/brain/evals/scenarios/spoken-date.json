@@ -1,0 +1,33 @@
+{
+  "id": "spoken-date",
+  "title": "Spelled-out date normalisation",
+  "tags": ["format", "date"],
+  "pageState": "formats",
+  "history": [],
+  "transcript": "March fifth nineteen ninety",
+  "expect": {
+    "actions": [
+      {
+        "action": "FILL",
+        "target": {
+          "label": "Date of Birth",
+          "groupLabel": "About you"
+        },
+        "value": "1990-03-05"
+      }
+    ],
+    "allowExtraActions": false,
+    "allowOrderChange": true
+  },
+  "mock": {
+    "thoughtProcess": "Spoken date maps to ISO format: 1990-03-05.",
+    "spokenFeedback": "Filled in your date of birth.",
+    "actions": [
+      {
+        "action": "FILL",
+        "targetId": "vfe_1",
+        "value": "1990-03-05"
+      }
+    ]
+  }
+}

@@ -2,7 +2,6 @@ import { PROTOCOL_VERSION } from '@vfe/protocol';
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 
-
 import type { BrainConfig } from './config';
 import { createProvider } from './llm/factory';
 import type { LlmProvider } from './llm/types';

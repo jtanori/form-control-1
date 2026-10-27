@@ -16,6 +16,7 @@ import {
 
 import { LruCache } from './cache';
 import type { BrainConfig } from './config';
+import { BrainResponseStructuredSchema, normaliseStructuredResponse } from './llm/structured';
 import type { LlmProvider, TokenUsage } from './llm/types';
 import { silentLogger, type BrainLogger } from './logger';
 import { buildSystemPrompt, SYSTEM_PROMPT_VERSION } from './prompt/system';
@@ -120,7 +121,7 @@ async function complete(
         deps.provider.complete({
           system,
           messages,
-          schema: BrainResponseSchema,
+          schema: BrainResponseStructuredSchema,
           schemaName: 'brain_response',
           temperature: deps.config.LLM_TEMPERATURE,
           timeoutMs: deps.config.LLM_TIMEOUT_MS,
@@ -146,7 +147,7 @@ async function complete(
   };
 
   const parseAttempt = (raw: unknown): BrainResponse | null => {
-    const parsed = BrainResponseSchema.safeParse(raw);
+    const parsed = BrainResponseSchema.safeParse(normaliseStructuredResponse(raw));
     return parsed.success ? parsed.data : null;
   };
 
@@ -157,7 +158,8 @@ async function complete(
   let usage = first.usage;
 
   if (!response) {
-    const issues = BrainResponseSchema.safeParse(first.parsed).error?.issues ?? [];
+    const issues =
+      BrainResponseSchema.safeParse(normaliseStructuredResponse(first.parsed)).error?.issues ?? [];
     const issueText = issues
       .map((issue) => `${issue.path.join('.') || '(root)'}: ${issue.message}`)
       .join('; ');

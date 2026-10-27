@@ -33,4 +33,8 @@ follows Keep a Changelog; the project is pre-1.0 and ships from `main`.
 - **Brain service (C-1):** `POST /api/process-command` on Hono with OpenAI
   Structured Outputs (Groq/Anthropic adapters), versioned system prompt, one
   repair retry, unknown-target guard, LRU + idempotency caches, structured
-  logs, `MOCK_LLM=1` zero-key mode and a 31-test suite.
+  logs, `MOCK_LLM=1` zero-key mode and a 51-test suite.
+- **Brain eval suite (C-2):** 20 recorded scenarios covering every documented
+  edge case, a label-based assertion engine (multiset, ordering, spoken surface,
+  fabricated-target and password-leak guards), mock/live/record CLI modes, cost
+  guard, committed baseline, nightly workflow and Markdown/JSON reports.

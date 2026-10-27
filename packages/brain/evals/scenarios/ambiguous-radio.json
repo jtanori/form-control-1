@@ -1,0 +1,31 @@
+{
+  "id": "ambiguous-radio",
+  "title": "Two Yes/No radio groups must clarify",
+  "tags": ["ambiguity", "clarification", "radio"],
+  "pageState": "radios",
+  "history": [],
+  "transcript": "set it to yes",
+  "expect": {
+    "actions": [
+      {
+        "action": "ASK_CLARIFICATION"
+      }
+    ],
+    "allowExtraActions": false,
+    "allowOrderChange": true,
+    "clarificationMustMention": ["Newsletter", "Terms"],
+    "spokenFeedback": {
+      "minLength": 10
+    }
+  },
+  "mock": {
+    "thoughtProcess": "\"Yes\" matches two radio groups: Newsletter and Terms. Asking is safer than guessing.",
+    "spokenFeedback": "Which one should be yes, Newsletter or Terms?",
+    "actions": [
+      {
+        "action": "ASK_CLARIFICATION",
+        "questionToUser": "Do you mean the Newsletter radio group or the Terms radio group?"
+      }
+    ]
+  }
+}

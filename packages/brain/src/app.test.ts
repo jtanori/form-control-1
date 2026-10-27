@@ -2,13 +2,12 @@ import type { BrainResponse, ProcessCommandRequest } from '@vfe/protocol';
 import { checkoutPageState } from '@vfe/protocol/fixtures';
 import { describe, expect, it, beforeEach } from 'vitest';
 
-
 import { createApp } from './app';
 import { loadConfig, type BrainConfig } from './config';
 import { MockProvider } from './llm/mock';
 import { OpenAiProvider } from './llm/openai';
 import type { LlmCompleteArgs, LlmProvider, TokenUsage } from './llm/types';
-import { createConsoleLogger, type BrainLogger } from './logger';
+import { createConsoleLogger, silentLogger, type BrainLogger } from './logger';
 import { buildSystemPrompt } from './prompt/system';
 import { buildUserMessage } from './prompt/user-message';
 import { resetBrainState } from './service';
@@ -67,7 +66,7 @@ function appWith(
   logger?: BrainLogger,
 ) {
   const config = testConfig(overrides);
-  return { app: createApp({ config, provider, logger }), config };
+  return { app: createApp({ config, provider, logger: logger ?? silentLogger }), config };
 }
 
 function post(
@@ -384,7 +383,7 @@ describe('provider adapters', () => {
     const result = await provider.complete({
       system: 'system',
       messages: [{ role: 'user', content: 'hello' }],
-      schema: await import('@vfe/protocol').then((m) => m.BrainResponseSchema),
+      schema: (await import('./llm/structured')).BrainResponseStructuredSchema,
       schemaName: 'brain_response',
     });
     expect(result.parsed).toEqual(validBrain);
@@ -412,7 +411,7 @@ describe('provider adapters', () => {
       provider.complete({
         system: 's',
         messages: [],
-        schema: await import('@vfe/protocol').then((m) => m.BrainResponseSchema),
+        schema: (await import('./llm/structured')).BrainResponseStructuredSchema,
         schemaName: 'brain_response',
       }),
     ).rejects.toMatchObject({ code: 'PROVIDER_TIMEOUT' });
@@ -429,6 +428,30 @@ describe('provider adapters', () => {
     const first = await provider.complete(args);
     const second = await provider.complete(args);
     expect(first.parsed).toEqual(second.parsed);
+  });
+});
+
+describe('structured output contract', () => {
+  it('normalises a null spokenFeedback into the frozen protocol shape', async () => {
+    const provider = new ScriptedProvider([
+      {
+        thoughtProcess: 'No need to speak.',
+        spokenFeedback: null,
+        actions: [{ action: 'CLICK', targetId: 'vfe_8' }],
+      },
+    ]);
+    const { app } = appWith(provider);
+    const res = await post(app, request());
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as { brainResponse: BrainResponse };
+    expect(body.brainResponse.spokenFeedback).toBeUndefined();
+  });
+
+  it('declares every property as required for strict structured outputs', async () => {
+    const { BrainResponseStructuredSchema } = await import('./llm/structured');
+    const shape = BrainResponseStructuredSchema.shape;
+    expect(Object.keys(shape).sort()).toEqual(['actions', 'spokenFeedback', 'thoughtProcess']);
+    expect(shape.spokenFeedback.isOptional()).toBe(false);
   });
 });
 

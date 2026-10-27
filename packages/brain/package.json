@@ -25,9 +25,9 @@
     "dev:edge": "tsx watch src/edge/server.ts",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "eval": "tsx src/evals/cli.ts",
-    "eval:live": "LIVE=1 tsx src/evals/cli.ts",
-    "eval:record": "RECORD=1 tsx src/evals/cli.ts",
+    "eval": "tsx evals/cli.ts",
+    "eval:live": "LIVE=1 tsx evals/cli.ts",
+    "eval:record": "RECORD=1 tsx evals/cli.ts",
     "clean": "rm -rf dist .turbo coverage"
   },
   "dependencies": {

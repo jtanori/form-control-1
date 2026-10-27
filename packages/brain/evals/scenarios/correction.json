@@ -1,0 +1,47 @@
+{
+  "id": "correction",
+  "title": "Correction overrides an earlier value",
+  "tags": ["history", "correction"],
+  "pageState": "wizard-step-2",
+  "history": [
+    {
+      "role": "user",
+      "text": "my name is Alice",
+      "at": 1730000000000
+    },
+    {
+      "role": "assistant",
+      "text": "Filled in your name.",
+      "at": 1730000001000
+    }
+  ],
+  "transcript": "actually, change my first name to Jonathan",
+  "expect": {
+    "actions": [
+      {
+        "action": "FILL",
+        "target": {
+          "label": "First Name",
+          "groupLabel": "Your name"
+        },
+        "value": "Jonathan"
+      }
+    ],
+    "allowExtraActions": false,
+    "allowOrderChange": true,
+    "spokenFeedback": {
+      "mustMention": ["Jonathan"]
+    }
+  },
+  "mock": {
+    "thoughtProcess": "History shows the first name was set to Alice; the correction replaces only that field.",
+    "spokenFeedback": "Changed your first name to Jonathan.",
+    "actions": [
+      {
+        "action": "FILL",
+        "targetId": "vfe_1",
+        "value": "Jonathan"
+      }
+    ]
+  }
+}

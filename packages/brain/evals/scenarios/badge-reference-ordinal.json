@@ -1,0 +1,32 @@
+{
+  "id": "badge-reference-ordinal",
+  "title": "Ordinal badge reference for a checkbox",
+  "tags": ["badge", "checkbox"],
+  "pageState": "checkout-basic",
+  "history": [],
+  "transcript": "check the seventh box",
+  "expect": {
+    "actions": [
+      {
+        "action": "SET_CHECKED",
+        "target": {
+          "label": "I agree to the terms and conditions"
+        },
+        "checked": true
+      }
+    ],
+    "allowExtraActions": false,
+    "allowOrderChange": true
+  },
+  "mock": {
+    "thoughtProcess": "The seventh badge is the terms checkbox; check it.",
+    "spokenFeedback": "Checked box 7.",
+    "actions": [
+      {
+        "action": "SET_CHECKED",
+        "targetId": "vfe_7",
+        "checked": true
+      }
+    ]
+  }
+}

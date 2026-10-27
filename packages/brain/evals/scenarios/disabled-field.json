@@ -1,0 +1,21 @@
+{
+  "id": "disabled-field",
+  "title": "Disabled controls are explained, never targeted",
+  "tags": ["disabled"],
+  "pageState": "wizard-step-2",
+  "history": [],
+  "transcript": "set the country to Canada",
+  "expect": {
+    "actions": [],
+    "allowExtraActions": false,
+    "allowOrderChange": true,
+    "spokenFeedback": {
+      "mustMention": ["disabled"]
+    }
+  },
+  "mock": {
+    "thoughtProcess": "Country is disabled, so the user must fix it on the page first.",
+    "spokenFeedback": "The Country field is disabled, so I can't change it.",
+    "actions": []
+  }
+}

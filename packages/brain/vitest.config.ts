@@ -15,7 +15,7 @@ export default defineConfig({
     name: 'brain',
     root: __dirname,
     environment: 'node',
-    include: ['src/**/*.test.ts', 'src/evals/**/*.test.ts'],
+    include: ['src/**/*.test.ts', 'evals/**/*.test.ts'],
     testTimeout: 20000,
   },
 });

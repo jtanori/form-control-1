@@ -1,0 +1,6 @@
+{
+  "mock": 1,
+  "live": 0.93,
+  "note": "Live baseline is 93% (14/15) as required by C-2; mock must stay at 100%. Update only with a reviewed eval report.",
+  "recordedAt": null
+}

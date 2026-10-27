@@ -1,0 +1,63 @@
+{
+  "id": "multi-field-dictation",
+  "title": "Name + email in one breath",
+  "tags": ["multi-field", "p0"],
+  "pageState": "checkout-basic",
+  "history": [],
+  "transcript": "I'm John Doe, my email is john at doe dot com",
+  "expect": {
+    "actions": [
+      {
+        "action": "FILL",
+        "target": {
+          "label": "First Name",
+          "groupLabel": "Contact"
+        },
+        "value": "John"
+      },
+      {
+        "action": "FILL",
+        "target": {
+          "label": "Last Name",
+          "groupLabel": "Contact"
+        },
+        "value": "Doe"
+      },
+      {
+        "action": "FILL",
+        "target": {
+          "label": "Email",
+          "groupLabel": "Contact"
+        },
+        "value": "john@doe.com"
+      }
+    ],
+    "allowExtraActions": false,
+    "allowOrderChange": true,
+    "spokenFeedback": {
+      "mustMention": [],
+      "mustNotContain": ["error"]
+    }
+  },
+  "mock": {
+    "thoughtProcess": "Splitting the dictated name across First/Last and normalising the spoken email.",
+    "spokenFeedback": "Filled in your name and email.",
+    "actions": [
+      {
+        "action": "FILL",
+        "targetId": "vfe_1",
+        "value": "John"
+      },
+      {
+        "action": "FILL",
+        "targetId": "vfe_2",
+        "value": "Doe"
+      },
+      {
+        "action": "FILL",
+        "targetId": "vfe_3",
+        "value": "john@doe.com"
+      }
+    ]
+  }
+}
