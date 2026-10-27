@@ -182,6 +182,11 @@ export const LoopMessageSchema = z.discriminatedUnion('type', [
     type: z.literal('LOOP_CANCELLED'),
     generation: z.number().int().nonnegative(),
   }),
+  z.object({
+    type: z.literal('LOOP_CONTEXT'),
+    generation: z.number().int().nonnegative(),
+    text: z.string().min(1).max(1000),
+  }),
 
   // service worker → tab
   z.object({
@@ -209,7 +214,10 @@ export const LoopMessageSchema = z.discriminatedUnion('type', [
 export type LoopMessage = z.infer<typeof LoopMessageSchema>;
 export type LoopToWorker = Extract<
   LoopMessage,
-  { type: 'LOOP_ARMED' | 'PAGE_STATE_UPDATED' | 'EXECUTION_REPORT' | 'LOOP_CANCELLED' }
+  {
+    type:
+      'LOOP_ARMED' | 'PAGE_STATE_UPDATED' | 'EXECUTION_REPORT' | 'LOOP_CANCELLED' | 'LOOP_CONTEXT';
+  }
 >;
 export type LoopToTab = Extract<
   LoopMessage,

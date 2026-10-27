@@ -10,6 +10,9 @@ export type LoopErrorCode =
   | 'EXECUTION_PARTIAL'
   | 'ELEMENT_MISSING'
   | 'PAGE_NAVIGATED'
+  | 'SUBMIT_UNCONFIRMED'
+  | 'CAPTCHA_BLOCKED'
+  | 'SUBMIT_ATTEMPTS_EXHAUSTED'
   | 'ABORTED'
   | 'UNKNOWN';
 
@@ -81,6 +84,24 @@ const TABLE: Record<LoopErrorCode, Omit<LoopErrorInfo, 'code'>> = {
     title: 'Page changed',
     message: 'The page navigated. Press Alt+V to continue here.',
     recoverable: true,
+    autoRetry: false,
+  },
+  SUBMIT_UNCONFIRMED: {
+    title: 'Not sure it went through',
+    message: "I clicked submit but I'm not sure it went through. Check the page.",
+    recoverable: true,
+    autoRetry: false,
+  },
+  CAPTCHA_BLOCKED: {
+    title: 'CAPTCHA on this form',
+    message: "There's a CAPTCHA on this form — you'll need to solve that part.",
+    recoverable: false,
+    autoRetry: false,
+  },
+  SUBMIT_ATTEMPTS_EXHAUSTED: {
+    title: 'Three tries',
+    message: "I've tried three times; this form may need a human.",
+    recoverable: false,
     autoRetry: false,
   },
   ABORTED: {

@@ -13,6 +13,7 @@ import {
   type LoopEvent,
   type LoopState,
 } from './machine';
+import { isSubmitLikeText, observeSubmit, type SubmitOutcome, type SubmitSnapshot } from './submit';
 
 export interface LoopHud {
   setStatus: HudController['setStatus'];
@@ -37,6 +38,11 @@ export interface LoopDeps {
   labelOf?: (targetId: string) => string | undefined;
   now?: () => number;
   silenceTimeoutMs?: number;
+  /** INT-2 observation seams (the page DOM in production). */
+  snapshot?: () => SubmitSnapshot;
+  focus?: (targetId: string) => void;
+  captcha?: () => string | null;
+  submitObserveMs?: number;
   /** Injectable so tests do not depend on real timers. */
   setTimer?: (callback: () => void, ms: number) => ReturnType<typeof setTimeout>;
   clearTimer?: (handle: ReturnType<typeof setTimeout>) => void;
@@ -50,6 +56,7 @@ export interface LoopDriver {
   handleAudioError: (code: string, message?: string) => void;
   getState: () => LoopState;
   getGeneration: () => number;
+  getLastSubmitOutcome: () => SubmitOutcome | null;
   destroy: () => void;
 }
 
@@ -71,6 +78,8 @@ export function createLoopDriver(deps: LoopDeps): LoopDriver {
   let destroyed = false;
   let actionsAbort: AbortController | null = null;
   let silenceTimer: ReturnType<typeof setTimeout> | null = null;
+  let submitAttempts = 0;
+  let lastSubmitOutcome: SubmitOutcome | null = null;
 
   const clearSilence = (): void => {
     if (silenceTimer !== null) {
@@ -126,6 +135,18 @@ export function createLoopDriver(deps: LoopDeps): LoopDriver {
         case 'hint':
           deps.hud.showHint(effect.text, effect.ms);
           break;
+        case 'focus':
+          deps.focus?.(effect.targetId);
+          break;
+        case 'flashError':
+          deps.badges?.flash(effect.targetId, 'error');
+          break;
+        case 'remember':
+          broadcast({ type: 'LOOP_CONTEXT', generation: effectGeneration, text: effect.text });
+          break;
+        case 'clearHistory':
+          submitAttempts = 0;
+          break;
         case 'execute':
           void runActions(effect.actions, effect.total, effectGeneration);
           break;
@@ -151,11 +172,28 @@ export function createLoopDriver(deps: LoopDeps): LoopDriver {
     applyEffects(result.effects, generation);
   };
 
+  const looksLikeSubmit = (actions: Action[]): boolean =>
+    actions.some((action) => {
+      if (action.action !== 'CLICK') return false;
+      const label = deps.labelOf?.(action.targetId) ?? '';
+      return isSubmitLikeText(label) || isSubmitLikeText(action.targetId);
+    });
+
   const runActions = async (
     actions: Action[],
     total: number,
     effectGeneration: number,
   ): Promise<void> => {
+    // INT-2 guard rail: never press submit on a form with an unsolved CAPTCHA.
+    const submitted = looksLikeSubmit(actions);
+    if (submitted) {
+      const captcha = deps.captcha?.() ?? null;
+      if (captcha) {
+        dispatch({ type: 'SUBMIT_BLOCKED', reason: 'CAPTCHA' });
+        return;
+      }
+    }
+
     const controller = new AbortController();
     actionsAbort = controller;
     const labels: Record<string, string> = {};
@@ -207,12 +245,41 @@ export function createLoopDriver(deps: LoopDeps): LoopDriver {
       failedLabels,
     });
 
+    const wasSubmit = submitted && report.ok;
     dispatch({
       type: 'EXECUTION_DONE',
       ok: report.ok,
       failedLabels,
       total,
+      ...(wasSubmit ? { submitted: true, attempted: submitAttempts } : {}),
     });
+
+    if (wasSubmit && state.kind === 'post_submit') {
+      submitAttempts += 1;
+      await observeAndReact(effectGeneration);
+    }
+  };
+
+  /** INT-2 §1–§2: wait for a decisive signal, then speak and re-listen. */
+  const observeAndReact = async (effectGeneration: number): Promise<void> => {
+    if (!deps.snapshot) {
+      dispatch({ type: 'SUBMIT_OUTCOME', outcome: { kind: 'UNKNOWN_SILENT' } });
+      return;
+    }
+    let outcome: SubmitOutcome;
+    try {
+      outcome = await observeSubmit({
+        prev: deps.distill(),
+        snapshot: deps.snapshot,
+        sleep: (ms) => new Promise<void>((resolve) => setTimeout(resolve, ms)),
+        ...(deps.submitObserveMs === undefined ? {} : { maxWaitMs: deps.submitObserveMs }),
+      });
+    } catch {
+      outcome = { kind: 'UNKNOWN_SILENT' };
+    }
+    if (effectGeneration !== generation) return;
+    lastSubmitOutcome = outcome;
+    dispatch({ type: 'SUBMIT_OUTCOME', outcome });
   };
 
   const handleMessage = (message: unknown): boolean => {
@@ -268,6 +335,7 @@ export function createLoopDriver(deps: LoopDeps): LoopDriver {
       dispatch({ type: 'AUDIO_ERROR', code, ...(message ? { message } : {}) }),
     getState: () => state,
     getGeneration: () => generation,
+    getLastSubmitOutcome: () => lastSubmitOutcome,
     destroy: () => {
       destroyed = true;
       clearSilence();

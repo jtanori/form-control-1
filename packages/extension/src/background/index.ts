@@ -173,6 +173,9 @@ async function handleLoopMessage(
     case 'LOOP_CANCELLED':
       await loopStore.clear(tabId);
       return { ok: true };
+    case 'LOOP_CONTEXT':
+      await loopStore.appendTurn(tabId, 'assistant', message.text);
+      return { ok: true };
     case 'EXECUTION_REPORT':
       await loopStore.appendTurn(
         tabId,

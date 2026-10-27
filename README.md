@@ -2,10 +2,12 @@
 
 Voice-driven form filling for the web. Say _"my name is Alice, email alice at wonderland dot com, and click Continue"_ — the assistant numbers every field on the page, listens, understands, and fills it in.
 
-Phase 0 (foundation) and all of Phase 1 (tracks A–E) are implemented: the
-protocol, the DOM eyes and hands, the brain, the edge proxy, the audio
-pipeline and the HUD/badge UI all have code, tests and docs. Phase 2
-(integration loop, recovery) and the QA testbed are next.
+Phase 0 (foundation), all of Phase 1 (tracks A–E) and two Phase 2 tickets
+(`INT-1` master control loop, `INT-2` post-submit validation & recovery) are
+implemented: the protocol, the DOM eyes and hands, the brain, the edge proxy,
+the audio pipeline, the HUD/badge UI, the state machine that ties them together
+and the recovery loop that reads the page back after a submit. The QA testbed
+is next.
 
 ```text
 ┌──────────────────────────── Chrome MV3 extension ────────────────────────────┐
@@ -77,7 +79,8 @@ Issue titles are `[<ID>] <title>` so an agent can be told simply: _"implement `A
 | Planning     | ✅ complete (18 tickets, dependency-checked, agent-ready) |
 | Phase 0      | ✅ `P0-1` monorepo, `P0-2` frozen protocol 1.0.0          |
 | Phase 1      | ✅ `A-1…A-3`, `B-1…B-3`, `C-1…C-3`, `D-1…D-2`, `E-1…E-2`  |
-| Phase 2 / QA | ⬜ next: `INT-1`, `INT-2`, `QA-1`                         |
+| Phase 2      | ✅ `INT-1` control loop, `INT-2` post-submit recovery     |
+| Phase 2 / QA | ⬜ next: `QA-1`                                           |
 
 ## License
 

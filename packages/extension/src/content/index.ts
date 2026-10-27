@@ -1,6 +1,7 @@
 import { distillPage, executeActions, watchPage } from '@vfe/dom-engine';
 
 import { createLoopDriver } from '../loop/driver';
+import { detectCaptcha, type SubmitSnapshot } from '../loop/submit';
 import { AssistantMessageSchema, parseAudioEvent } from '../messaging';
 
 import { mountBadges } from './badges/mount';
@@ -37,6 +38,26 @@ function send(message: unknown): Promise<unknown> | void {
   }
 }
 
+/** INT-2 observation: what the page looks like right now. */
+function submitSnapshot(): SubmitSnapshot {
+  const banners = Array.from(
+    document.querySelectorAll<HTMLElement>(
+      '[role="alert"], [role="status"], h1, h2, [class*="success"], [class*="thank"]',
+    ),
+  )
+    .slice(0, 5)
+    .map((element) => element.textContent?.trim() ?? '')
+    .filter(Boolean);
+  return {
+    // The content script is re-injected on navigation, so a live script never
+    // sees `navigated`; the URL check below covers SPA route changes.
+    pageState: distillPage({ maxElements: 250 }),
+    url: globalThis.location?.href ?? '',
+    successText: banners,
+    navigated: false,
+  };
+}
+
 const loop = createLoopDriver({
   hud,
   badges,
@@ -47,6 +68,13 @@ const loop = createLoopDriver({
   stopSpeaking: () => {
     void send({ type: 'TTS_STOP' });
   },
+  snapshot: submitSnapshot,
+  focus: (targetId) => {
+    const element = document.querySelector<HTMLElement>(`[data-vfe-id="${targetId}"]`);
+    element?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    element?.focus();
+  },
+  captcha: () => detectCaptcha(document),
   labelOf: (targetId) => {
     const el = document.querySelector(`[data-vfe-id="${targetId}"]`);
     return (

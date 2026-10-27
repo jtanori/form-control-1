@@ -159,5 +159,6 @@ Continue`; values and page text never enter it (`summariseActions`).
 - The Playwright integration table from the ticket (mock edge + real extension)
   needs the testbed dev server and a fake microphone; the audio E2E harness is
   gated behind `RUN_EXTENSION_E2E=1`.
-- INT-2 owns post-submit validation and recovery; the loop ends at `idle` after
-  a settle + re-distil, which INT-2 will pick up from.
+- Post-submit validation and recovery now live in
+  [`post-submit.md`](./post-submit.md): a submit-ish click enters
+  `post_submit` instead of settling straight to `idle`.

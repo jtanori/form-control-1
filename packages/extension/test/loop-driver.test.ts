@@ -245,6 +245,114 @@ describe('errors', () => {
   });
 });
 
+describe('post-submit (INT-2)', () => {
+  const submitRun = (overrides: Record<string, unknown> = {}) => {
+    const execute = vi.fn(async (actions: Action[]) => ({
+      results: actions.map((action) => ({ action, ok: true, warnings: [], durationMs: 1 })),
+      ok: true,
+      aborted: false,
+      totalMs: 3,
+      trace: [],
+    }));
+    const setupResult = setup({ execute: execute as never });
+    const driver = createLoopDriver({
+      hud: {
+        setStatus: (status) => setupResult.statuses.push(status),
+        setMessage: (text, kind) => setupResult.messages.push({ text, ...(kind ? { kind } : {}) }),
+        setActionsProgress: () => undefined,
+        showHint: (text) => setupResult.hints.push(text),
+      },
+      badges: {
+        sync: () => undefined,
+        flash: (id, result) => setupResult.flashes.push({ id, ...(result ? { result } : {}) }),
+      },
+      distill: () => page,
+      send: (message) => {
+        setupResult.sent.push(message as Record<string, unknown>);
+      },
+      execute: execute as never,
+      speak: async (text) => {
+        setupResult.spoken.push(text);
+      },
+      labelOf: (id) => (id === 'vfe_submit' ? 'Place order' : 'Full name'),
+      snapshot: () => ({
+        pageState: page,
+        url: 'https://shop.test/checkout',
+        successText: ['Thank you! Order #4412'],
+        navigated: false,
+      }),
+      captcha: () => null,
+      submitObserveMs: 0,
+      ...overrides,
+    });
+    // `setupResult` also carries a driver; the one with the INT-2 seams wins.
+    return { ...setupResult, driver };
+  };
+
+  const runSubmit = async (driver: ReturnType<typeof createLoopDriver>): Promise<void> => {
+    driver.activate();
+    driver.handleMessage({ type: 'LOOP_TRANSCRIBING', generation: 1 });
+    driver.handleMessage({ type: 'LOOP_TRANSCRIPT', generation: 1, transcript: 'place my order' });
+    driver.handleMessage({
+      type: 'LOOP_BRAIN_RESULT',
+      generation: 1,
+      response: {
+        thoughtProcess: '',
+        actions: [{ action: 'CLICK', targetId: 'vfe_submit' }],
+      },
+    });
+    await vi.advanceTimersByTimeAsync(0);
+  };
+
+  it('observes the page after a submit click and announces success', async () => {
+    const { driver, spoken } = submitRun();
+    await runSubmit(driver);
+    await vi.advanceTimersByTimeAsync(0);
+    expect(driver.getState()).toEqual({ kind: 'idle' });
+    expect(spoken.some((line) => line.includes('4412'))).toBe(true);
+    expect(driver.getLastSubmitOutcome()).toMatchObject({ kind: 'SUCCESS' });
+  });
+
+  it('blocks submission when a CAPTCHA is present', async () => {
+    const { driver, execute } = submitRun({ captcha: () => 'iframe[src*="recaptcha"]' });
+    await runSubmit(driver);
+    expect(execute).not.toHaveBeenCalled();
+    expect(driver.getState()).toMatchObject({ kind: 'error', code: 'CAPTCHA_BLOCKED' });
+  });
+
+  it('speaks field errors and remembers the repair context', async () => {
+    const fieldPage = {
+      urlOrAppTitle: 'Checkout',
+      elements: [
+        {
+          id: 'vfe_password',
+          badgeIndex: 1,
+          type: 'password' as const,
+          label: 'Password',
+          value: '<redacted>',
+          required: true,
+          disabled: false,
+          focused: false,
+          validationError: 'must be at least 8 characters',
+        },
+      ],
+    };
+    const { driver, spoken, sent } = submitRun({
+      snapshot: () => ({
+        pageState: fieldPage,
+        url: 'https://shop.test/checkout',
+        successText: [],
+        navigated: false,
+      }),
+    });
+    await runSubmit(driver);
+    await vi.advanceTimersByTimeAsync(0);
+    expect(driver.getState().kind).toBe('listening');
+    expect(spoken.some((line) => line.includes('Password'))).toBe(true);
+    expect(sent.some((message) => message.type === 'LOOP_CONTEXT')).toBe(true);
+  });
+});
+
 describe('lifecycle', () => {
   it('destroy stops timers and ignores later events', async () => {
     const { driver, sent, hints } = setup();

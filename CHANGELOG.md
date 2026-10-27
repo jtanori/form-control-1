@@ -73,3 +73,9 @@ follows Keep a Changelog; the project is pre-1.0 and ships from `main`.
   recoverable error taxonomy with spoken partial-failure summaries, and
   conversation history capped at 20 turns with a 10 minute TTL in
   `chrome.storage.session`.
+- **Post-submit validation & recovery (INT-2):** submit-aware outcome detection
+  (navigation, SPA route change, field errors, global errors, success banners
+  with order numbers, form growth, honest silent no-op) with a 2 s adaptive
+  observation window, spoken one-sentence recovery copy capped at 140 chars,
+  focus + red badge flash on the first invalid field, a repair context handed to
+  the next command, CAPTCHA blocking before any click and a three-attempt cap.
