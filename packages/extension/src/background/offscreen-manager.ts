@@ -13,7 +13,7 @@ export interface OffscreenApi {
 export const OFFSCREEN_IDLE_MS = 5 * 60 * 1000;
 export const OFFSCREEN_CREATION: OffscreenDocumentOptions = {
   url: 'offscreen.html',
-  reasons: ['USER_MEDIA'],
+  reasons: ['USER_MEDIA', 'AUDIO_PLAYBACK'],
   justification: 'Voice input for form filling',
 };
 

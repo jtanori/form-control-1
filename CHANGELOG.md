@@ -49,3 +49,9 @@ follows Keep a Changelog; the project is pre-1.0 and ships from `main`.
   16 kHz PCM16 WAV encoder, linear resampler, 30 s utterance cap with a
   parallel PCM collector, 60 s silence auto-stop, 250 ms TTS mute tail, and a
   message router that rejects audio from content scripts.
+- **STT & TTS client (D-2):** session-token STT through the edge proxy with
+  bounded retries, timeout/abort-supersede semantics, deterministic noise and
+  hallucination filtering, privacy-safe metrics; chunked offscreen
+  `speechSynthesis` with locale-aware voice selection, 250 ms VAD mute tail,
+  cancellation and `<redacted>` stripping; zod-validated sync settings and a
+  popup settings UI.

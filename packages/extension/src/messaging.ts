@@ -46,6 +46,46 @@ export const AudioEventSchema = z.discriminatedUnion('type', [
 export type AudioEvent = z.infer<typeof AudioEventSchema>;
 export type SpeechEndEvent = Extract<AudioEvent, { type: 'VAD_SPEECH_END' }>;
 
+export const TtsMessageSchema = z.discriminatedUnion('type', [
+  z.object({
+    type: z.literal('TTS_SPEAK'),
+    text: z.string().min(1).max(2000),
+    lang: z.string().max(20).optional(),
+    rate: z.number().min(0.5).max(2).optional(),
+  }),
+  z.object({ type: z.literal('TTS_STOP') }),
+]);
+export type TtsMessage = z.infer<typeof TtsMessageSchema>;
+
+export const TranscriptReadySchema = z.object({
+  type: z.literal('TRANSCRIPT_READY'),
+  transcript: z.string(),
+  latencyMs: z.number(),
+  truncated: z.boolean(),
+});
+export const TranscriptErrorSchema = z.object({
+  type: z.literal('TRANSCRIPT_ERROR'),
+  code: z.string(),
+  message: z.string().max(500),
+});
+export const SttMetricsSchema = z.object({
+  type: z.literal('STT_METRICS'),
+  encodeMs: z.number(),
+  uploadMs: z.number(),
+  providerMs: z.number(),
+  totalMs: z.number(),
+  bytes: z.number(),
+});
+export const AssistantMessageSchema = z.discriminatedUnion('type', [
+  TranscriptReadySchema,
+  TranscriptErrorSchema,
+  SttMetricsSchema,
+]);
+export type AssistantMessage = z.infer<typeof AssistantMessageSchema>;
+export type TranscriptReadyMessage = z.infer<typeof TranscriptReadySchema>;
+export type TranscriptErrorMessage = z.infer<typeof TranscriptErrorSchema>;
+export type SttMetricsMessage = z.infer<typeof SttMetricsSchema>;
+
 export interface RuntimeSender {
   id?: string;
   tab?: { id?: number };
@@ -64,6 +104,13 @@ export function parseAudioCommand(raw: unknown): ParseResult<AudioCommand> {
   return parsed.success
     ? { ok: true, value: parsed.data }
     : { ok: false, error: 'INVALID_AUDIO_COMMAND' };
+}
+
+export function parseTtsMessage(raw: unknown): ParseResult<TtsMessage> {
+  const parsed = TtsMessageSchema.safeParse(raw);
+  return parsed.success
+    ? { ok: true, value: parsed.data }
+    : { ok: false, error: 'INVALID_TTS_MESSAGE' };
 }
 
 export function parseAudioEvent(raw: unknown): ParseResult<AudioEvent> {

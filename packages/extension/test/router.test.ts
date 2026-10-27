@@ -21,14 +21,16 @@ function setup() {
   const sendToOffscreen = vi.fn(async () => undefined);
   const broadcast = vi.fn(async (_event: AudioEvent) => undefined);
   const onSpeechEnd = vi.fn(async (_event: SpeechEndEvent) => undefined);
+  const onTtsMessage = vi.fn(async () => ({ ok: true }));
   const router = createMessageRouter({
     runtimeId: RUNTIME_ID,
     manager,
     sendToOffscreen,
     broadcast,
     onSpeechEnd,
+    onTtsMessage,
   });
-  return { api, manager, sendToOffscreen, broadcast, onSpeechEnd, router };
+  return { api, manager, sendToOffscreen, broadcast, onSpeechEnd, onTtsMessage, router };
 }
 
 function wav(): ArrayBuffer {
@@ -109,6 +111,16 @@ describe('message router', () => {
     const event = { type: 'VAD_SPEECH_START', at: 5 } as const;
     await router.handleMessage(event, { id: RUNTIME_ID });
     expect(broadcast).toHaveBeenCalledWith(event);
+  });
+
+  it('forwards TTS messages to the offscreen host', async () => {
+    const { router, onTtsMessage } = setup();
+    const result = await router.handleMessage(
+      { type: 'TTS_SPEAK', text: 'Please clarify.' },
+      { id: RUNTIME_ID },
+    );
+    expect(result.ok).toBe(true);
+    expect(onTtsMessage).toHaveBeenCalledWith({ type: 'TTS_SPEAK', text: 'Please clarify.' });
   });
 
   it('clears listening state after an audio error', async () => {

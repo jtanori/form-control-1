@@ -1,3 +1,8 @@
+import { EdgeSession } from '../audio/session';
+import { SttError, configureStt, transcribe } from '../audio/stt';
+import type { AssistantMessage, TtsMessage } from '../messaging';
+import { loadSettings, type Settings } from '../settings';
+
 import { registerCommands } from './commands';
 import { OffscreenManager } from './offscreen-manager';
 import { createMessageRouter } from './router';
@@ -25,13 +30,68 @@ async function broadcast(event: unknown): Promise<void> {
   }
 }
 
+interface Initialised {
+  settings: Settings;
+  session: EdgeSession;
+}
+
+let initialised: Promise<Initialised> | null = null;
+
+function initialise(): Promise<Initialised> {
+  initialised ??= (async () => {
+    const settings = await loadSettings();
+    const session = new EdgeSession({
+      edgeUrl: settings.edgeUrl,
+      extensionId: chrome.runtime.id,
+      storage: chrome.storage.local,
+    });
+    configureStt(session, settings.edgeUrl);
+    return { settings, session };
+  })();
+  return initialised;
+}
+
+async function broadcastAssistant(message: AssistantMessage): Promise<void> {
+  await broadcast(message);
+}
+
 const router = createMessageRouter({
   runtimeId: chrome.runtime.id,
   manager,
   sendToOffscreen: (command) => chrome.runtime.sendMessage(command),
   broadcast,
-  // D-2 takes over here: the utterance goes to STT, never to a tab.
-  onSpeechEnd: async () => undefined,
+  onSpeechEnd: async (event) => {
+    const { settings } = await initialise();
+    try {
+      const result = await transcribe(event.audio, {
+        language: settings.sttLanguage,
+        onMetrics: (metrics) => {
+          void broadcastAssistant({ type: 'STT_METRICS', ...metrics });
+        },
+      });
+      await broadcastAssistant({
+        type: 'TRANSCRIPT_READY',
+        transcript: result.transcript,
+        latencyMs: result.latencyMs,
+        truncated: result.truncated,
+      });
+    } catch (error) {
+      await broadcastAssistant({
+        type: 'TRANSCRIPT_ERROR',
+        code: error instanceof SttError ? error.code : 'PROVIDER_ERROR',
+        message: error instanceof Error ? error.message : 'Transcription failed',
+      });
+    }
+  },
+  onTtsMessage: async (message: TtsMessage) => {
+    try {
+      await manager.ensure();
+      await chrome.runtime.sendMessage(message);
+      return { ok: true };
+    } catch {
+      return { ok: false, error: 'OFFSCREEN_FAILED' };
+    }
+  },
 });
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {

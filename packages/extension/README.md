@@ -36,5 +36,11 @@ routed to the service worker (STT), never to a tab. `host_permissions:
 <all_urls>` is an MVP concession for automatic injection and will move to
 optional permissions in Phase 2.
 
+Speech-to-text and text-to-speech clients live in `src/audio/stt.ts` and
+`src/audio/tts.ts`. They talk only to the C-3 edge proxy (session token, no
+provider keys), retry within bounds, and speak from the offscreen document so TTS
+keeps working while the tab is backgrounded.
+
 See [`docs/extension/audio-pipeline.md`](../../docs/extension/audio-pipeline.md)
-for the architecture, tuning constants and E2E instructions.
+for capture, [`docs/extension/stt-tts.md`](../../docs/extension/stt-tts.md) for
+STT/TTS, the latency budget and Chrome workarounds.

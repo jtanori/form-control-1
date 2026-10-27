@@ -1,7 +1,8 @@
 import { MicVAD } from '@ricky0123/vad-web';
 
 import { PcmCollector } from '../audio/pcm';
-import { parseAudioCommand, type AudioEvent } from '../messaging';
+import { configureTts, speak, stopSpeaking } from '../audio/tts';
+import { parseAudioCommand, parseTtsMessage, type AudioEvent } from '../messaging';
 
 import {
   AudioController,
@@ -73,8 +74,21 @@ const controller = new AudioController({
   emit,
 });
 
+configureTts({
+  mute: () => controller.mute(),
+  unmute: () => controller.unmute(),
+});
+
 chrome.runtime.onMessage.addListener((message: unknown, sender) => {
   if (sender.id !== chrome.runtime.id) return;
+
+  const tts = parseTtsMessage(message);
+  if (tts.ok) {
+    if (tts.value.type === 'TTS_STOP') stopSpeaking();
+    else void speak(tts.value.text, { lang: tts.value.lang, rate: tts.value.rate });
+    return;
+  }
+
   const parsed = parseAudioCommand(message);
   if (!parsed.ok) return;
   switch (parsed.value.type) {

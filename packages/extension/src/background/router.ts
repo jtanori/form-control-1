@@ -4,11 +4,13 @@ import {
   isTrustedSender,
   parseAudioCommand,
   parseAudioEvent,
+  parseTtsMessage,
   type AudioCommand,
   type AudioEvent,
   type ParseFailure,
   type RuntimeSender,
   type SpeechEndEvent,
+  type TtsMessage,
 } from '../messaging';
 
 import type { OffscreenManager } from './offscreen-manager';
@@ -16,10 +18,12 @@ import type { OffscreenManager } from './offscreen-manager';
 export interface RouterDeps {
   runtimeId: string;
   manager: OffscreenManager;
-  sendToOffscreen: (command: AudioCommand) => Promise<void>;
+  sendToOffscreen: (command: AudioCommand | TtsMessage) => Promise<void>;
   broadcast: (event: AudioEvent) => Promise<void> | void;
   /** D-2 consumes the utterance; D-1 deliberately drops it. */
   onSpeechEnd?: (event: SpeechEndEvent) => Promise<void> | void;
+  /** TTS is forwarded to the offscreen document, which owns speechSynthesis. */
+  onTtsMessage?: (message: TtsMessage) => Promise<RouterResult> | RouterResult;
 }
 
 export interface RouterResult {
@@ -111,6 +115,9 @@ export function createMessageRouter(deps: RouterDeps): MessageRouter {
   return {
     async handleMessage(message, sender) {
       if (!isTrustedSender(sender, deps.runtimeId)) return fail('UNTRUSTED_SENDER');
+
+      const tts = parseTtsMessage(message);
+      if (tts.ok && deps.onTtsMessage) return deps.onTtsMessage(tts.value);
 
       const command = parseAudioCommand(message);
       if (command.ok) return handleCommand(command.value);
