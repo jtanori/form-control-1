@@ -12,6 +12,7 @@ export default tseslint.config(
       '**/playwright-report/**',
       '**/test-results/**',
       'packages/extension/dist/**',
+      'packages/extension/public/vad/**',
       'node_modules/**',
     ],
   },
@@ -45,7 +46,7 @@ export default tseslint.config(
     },
   },
   {
-    files: ['packages/brain/**/*.ts', 'scripts/**/*.mjs'],
+    files: ['packages/brain/**/*.ts', 'scripts/**/*.mjs', '**/scripts/**/*.mjs'],
     rules: { 'no-console': 'off' },
   },
   {

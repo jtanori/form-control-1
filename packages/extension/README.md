@@ -18,7 +18,23 @@ pnpm --filter @vfe/extension build   # dist/ is a loadable unpacked extension
 
 Contents:
 
-- `background.ts` — MV3 service worker, message router, offscreen lifecycle
-- `content.ts` — content script (HUD, badges, DOM bridge)
-- `offscreen.ts` — microphone capture + VAD in an offscreen document
-- `public/manifest.json` — permissions, commands (`Alt+V`), content scripts
+- `src/background/` — MV3 service worker, message router, offscreen lifecycle,
+  `Alt+V` command
+- `src/content/` — content script (HUD, badges, DOM bridge); never calls
+  `getUserMedia` and never sees raw audio
+- `src/offscreen/` — microphone capture + Silero VAD in an offscreen document
+- `src/audio/` — pure WAV encoder, resampler and PCM collector
+- `src/messaging.ts` — zod-validated internal `AudioEvent`/`AudioCommand`
+- `public/manifest.json` — permissions, commands (`Alt+V`), popup
+
+## Permissions and privacy
+
+The microphone is captured in the **offscreen document** (extension origin), so
+one permission covers every site; per-origin content-script capture would prompt
+on every website. Audio stays in memory, is capped at 30 seconds, and is only
+routed to the service worker (STT), never to a tab. `host_permissions:
+<all_urls>` is an MVP concession for automatic injection and will move to
+optional permissions in Phase 2.
+
+See [`docs/extension/audio-pipeline.md`](../../docs/extension/audio-pipeline.md)
+for the architecture, tuning constants and E2E instructions.

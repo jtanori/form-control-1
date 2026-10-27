@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Voice Form Engine</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        font-family: system-ui, sans-serif;
+      }
+      body {
+        width: 280px;
+        margin: 0;
+        padding: 16px;
+      }
+      h1 {
+        font-size: 14px;
+        margin: 0 0 8px;
+      }
+      p {
+        font-size: 12px;
+        line-height: 1.5;
+        color: #666;
+      }
+      button {
+        width: 100%;
+        padding: 8px;
+        font: inherit;
+        cursor: pointer;
+      }
+      #status[data-tone='ok'] {
+        color: #18794e;
+      }
+      #status[data-tone='error'] {
+        color: #b42318;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Voice Form Engine</h1>
+    <p>
+      The microphone is captured on this extension's origin, not per site. Audio is processed in
+      memory only and never stored.
+    </p>
+    <p id="status" data-tone="idle">Microphone is off.</p>
+    <button id="enable" type="button">Enable microphone</button>
+    <script type="module" src="/src/popup.ts"></script>
+  </body>
+</html>

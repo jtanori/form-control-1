@@ -21,3 +21,6 @@ packages/brain/evals/report.json
 packages/brain/evals/report.md
 packages/brain/evals/report.live.json
 packages/brain/evals/report.live.md
+
+# generated VAD/ONNX assets (see packages/extension/scripts/prepare-vad-assets.mjs)
+packages/extension/public/vad

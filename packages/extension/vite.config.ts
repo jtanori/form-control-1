@@ -10,9 +10,10 @@ export default defineConfig({
     sourcemap: true,
     rollupOptions: {
       input: {
-        background: resolve(__dirname, 'src/background.ts'),
-        content: resolve(__dirname, 'src/content.ts'),
-        offscreen: resolve(__dirname, 'src/offscreen.ts'),
+        background: resolve(__dirname, 'src/background/index.ts'),
+        content: resolve(__dirname, 'src/content/index.ts'),
+        offscreen: resolve(__dirname, 'src/offscreen/index.ts'),
+        popup: resolve(__dirname, 'popup.html'),
       },
       output: {
         entryFileNames: '[name].js',

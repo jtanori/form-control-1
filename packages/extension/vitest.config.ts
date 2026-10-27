@@ -14,6 +14,6 @@ export default defineConfig({
     root: __dirname,
     environment: 'jsdom',
     setupFiles: [fileURLToPath(new URL('../../vitest.setup.ts', import.meta.url))],
-    include: ['src/**/*.test.ts'],
+    include: ['src/**/*.test.ts', 'test/**/*.test.ts'],
   },
 });

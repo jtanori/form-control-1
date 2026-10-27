@@ -18,17 +18,20 @@
     }
   ],
   "action": {
-    "default_title": "Voice Form Engine"
+    "default_title": "Voice Form Engine",
+    "default_popup": "popup.html"
   },
   "commands": {
     "activate-voice": {
-      "suggested_key": { "default": "Alt+V" },
+      "suggested_key": {
+        "default": "Alt+V"
+      },
       "description": "Start voice input"
     }
   },
   "web_accessible_resources": [
     {
-      "resources": ["vad/*.wasm", "vad/*.onnx", "worklets/*.js"],
+      "resources": ["vad/*", "worklets/*.js"],
       "matches": ["<all_urls>"]
     }
   ]

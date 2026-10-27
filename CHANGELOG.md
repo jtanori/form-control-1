@@ -44,3 +44,8 @@ follows Keep a Changelog; the project is pre-1.0 and ships from `main`.
   concurrency limits, 5 MB/512 KB body caps, schema and protocol validation
   before forwarding, header scrubbing, typed upstream errors, `MOCK_STT=1`
   and zero provider keys in the extension.
+- **MV3 audio capture (D-1):** offscreen document hosting Silero v5 VAD,
+  single-flight document lifecycle, popup permission flow, `Alt+V`, a pure
+  16 kHz PCM16 WAV encoder, linear resampler, 30 s utterance cap with a
+  parallel PCM collector, 60 s silence auto-stop, 250 ms TTS mute tail, and a
+  message router that rejects audio from content scripts.
