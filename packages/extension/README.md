@@ -49,7 +49,13 @@ user sees what the assistant is doing.
 A second shadow root numbers every discovered control so the user can say "field
 4" out loud; it is `pointer-events: none` and never steals a click.
 
-See [`docs/extension/hud.md`](../../docs/extension/hud.md) for the HUD,
+`src/loop/` is the control loop: a pure state machine plus a driver that turns
+its effects into HUD updates, badge flashes, audio start/stop, action execution
+and speech. Every activation bumps a generation, so anything that comes back
+late is dropped instead of filling the wrong field.
+
+See [`docs/extension/loop.md`](../../docs/extension/loop.md) for the control
+loop, [`docs/extension/hud.md`](../../docs/extension/hud.md) for the HUD,
 [`docs/extension/badges.md`](../../docs/extension/badges.md) for the badge
 overlay,
 [`docs/extension/audio-pipeline.md`](../../docs/extension/audio-pipeline.md) for

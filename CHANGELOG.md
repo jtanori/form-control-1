@@ -66,3 +66,10 @@ follows Keep a Changelog; the project is pre-1.0 and ships from `main`.
   zero-write idle path, read/write-split positioning on one shared rAF, 250-badge
   cap, flash states driven by action results, viewport clamping, scroll/resize/
   accordion following and a Playwright glue-and-frame-rate suite.
+- **Master control loop (INT-1):** a pure seven-state reducer (idle, listening,
+  transcribing, thinking, executing, clarifying, error) with an effect list, a
+  generation guard that drops stale continuations, `Esc` cancellation at every
+  state, a 15 s silence timeout, the brain round trip through the edge proxy,
+  recoverable error taxonomy with spoken partial-failure summaries, and
+  conversation history capped at 20 turns with a 10 minute TTL in
+  `chrome.storage.session`.

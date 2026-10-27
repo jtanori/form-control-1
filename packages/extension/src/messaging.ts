@@ -1,3 +1,4 @@
+import { BrainResponseSchema, PageStateSchema } from '@vfe/protocol';
 import { z } from 'zod';
 
 /**
@@ -150,4 +151,74 @@ export function hasAudioPayload(raw: unknown): boolean {
 /** Content scripts must never receive the utterance buffer. */
 export function contentMayReceive(event: AudioEvent): boolean {
   return !hasAudioPayload(event);
+}
+
+/**
+ * INT-1 loop messages. The content script owns the DOM and never does network
+ * I/O; the service worker owns the session, STT and the brain call. Every
+ * payload carries the `generation` it belongs to so a stale continuation can be
+ * dropped on either side.
+ */
+export const LoopMessageSchema = z.discriminatedUnion('type', [
+  // tab → service worker
+  z.object({
+    type: z.literal('LOOP_ARMED'),
+    generation: z.number().int().nonnegative(),
+    pageState: PageStateSchema,
+  }),
+  z.object({
+    type: z.literal('PAGE_STATE_UPDATED'),
+    generation: z.number().int().nonnegative(),
+    pageState: PageStateSchema,
+  }),
+  z.object({
+    type: z.literal('EXECUTION_REPORT'),
+    generation: z.number().int().nonnegative(),
+    ok: z.boolean(),
+    total: z.number().int().nonnegative(),
+    failedLabels: z.array(z.string().max(200)).max(50),
+  }),
+  z.object({
+    type: z.literal('LOOP_CANCELLED'),
+    generation: z.number().int().nonnegative(),
+  }),
+
+  // service worker → tab
+  z.object({
+    type: z.literal('LOOP_TRANSCRIBING'),
+    generation: z.number().int().nonnegative(),
+  }),
+  z.object({
+    type: z.literal('LOOP_TRANSCRIPT'),
+    generation: z.number().int().nonnegative(),
+    transcript: z.string().max(2000),
+  }),
+  z.object({
+    type: z.literal('LOOP_BRAIN_RESULT'),
+    generation: z.number().int().nonnegative(),
+    response: BrainResponseSchema,
+  }),
+  z.object({
+    type: z.literal('LOOP_ERROR'),
+    generation: z.number().int().nonnegative(),
+    code: z.string().max(40),
+    message: z.string().max(500),
+  }),
+]);
+
+export type LoopMessage = z.infer<typeof LoopMessageSchema>;
+export type LoopToWorker = Extract<
+  LoopMessage,
+  { type: 'LOOP_ARMED' | 'PAGE_STATE_UPDATED' | 'EXECUTION_REPORT' | 'LOOP_CANCELLED' }
+>;
+export type LoopToTab = Extract<
+  LoopMessage,
+  { type: 'LOOP_TRANSCRIBING' | 'LOOP_TRANSCRIPT' | 'LOOP_BRAIN_RESULT' | 'LOOP_ERROR' }
+>;
+
+export function parseLoopMessage(raw: unknown): ParseResult<LoopMessage> {
+  const parsed = LoopMessageSchema.safeParse(raw);
+  return parsed.success
+    ? { ok: true, value: parsed.data }
+    : { ok: false, error: 'INVALID_LOOP_MESSAGE' };
 }

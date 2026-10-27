@@ -1,10 +1,19 @@
 import { EdgeSession } from '../audio/session';
-import { SttError, configureStt, transcribe } from '../audio/stt';
-import type { AssistantMessage, TtsMessage } from '../messaging';
+import { configureStt, transcribe } from '../audio/stt';
+import { summariseActions } from '../loop/history';
+import {
+  parseLoopMessage,
+  type AssistantMessage,
+  type LoopToWorker,
+  type TtsMessage,
+} from '../messaging';
+import { requestBrain } from '../net/brain';
 import { loadSettings, type Settings } from '../settings';
 
 import { registerCommands } from './commands';
+import { LoopStore } from './loop-store';
 import { OffscreenManager } from './offscreen-manager';
+import { runCommand } from './pipeline';
 import { createMessageRouter } from './router';
 
 const EXTENSION_VERSION = '0.1.0';
@@ -19,6 +28,21 @@ const manager = new OffscreenManager({
     }),
   closeDocument: () => chrome.offscreen.closeDocument(),
 });
+
+const loopStore = new LoopStore(chrome.storage.session);
+
+async function sendToTab(tabId: number, message: unknown): Promise<void> {
+  try {
+    await chrome.tabs.sendMessage(tabId, message);
+  } catch {
+    // The tab navigated or closed mid-loop: never throw into the pipeline.
+  }
+}
+
+async function activeTabId(): Promise<number | null> {
+  const [tab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
+  return tab?.id ?? null;
+}
 
 async function broadcast(event: unknown): Promise<void> {
   const [tab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
@@ -61,27 +85,57 @@ const router = createMessageRouter({
   sendToOffscreen: (command) => chrome.runtime.sendMessage(command),
   broadcast,
   onSpeechEnd: async (event) => {
-    const { settings } = await initialise();
-    try {
-      const result = await transcribe(event.audio, {
-        language: settings.sttLanguage,
-        onMetrics: (metrics) => {
-          void broadcastAssistant({ type: 'STT_METRICS', ...metrics });
-        },
+    const tabId = await activeTabId();
+    if (tabId === null) return;
+    const armed = await loopStore.get(tabId);
+    // No armed loop in that tab: the utterance belongs to nobody.
+    if (!armed) return;
+    const generation = armed.generation;
+
+    await sendToTab(tabId, { type: 'LOOP_TRANSCRIBING', generation });
+
+    const { settings, session } = await initialise();
+    const outcome = await runCommand(
+      {
+        transcribe: (audio) =>
+          transcribe(audio, {
+            language: settings.sttLanguage,
+            onMetrics: (metrics) => {
+              void broadcastAssistant({ type: 'STT_METRICS', ...metrics });
+            },
+          }),
+        brain: (request, options) =>
+          requestBrain(
+            request,
+            { session, edgeUrl: settings.edgeUrl },
+            options.signal ? { signal: options.signal } : {},
+          ),
+      },
+      { audio: event.audio, pageState: armed.pageState, history: armed.history },
+    );
+
+    if (!outcome.ok) {
+      await sendToTab(tabId, {
+        type: 'LOOP_ERROR',
+        generation,
+        code: outcome.code,
+        message: outcome.message,
       });
-      await broadcastAssistant({
-        type: 'TRANSCRIPT_READY',
-        transcript: result.transcript,
-        latencyMs: result.latencyMs,
-        truncated: result.truncated,
-      });
-    } catch (error) {
-      await broadcastAssistant({
-        type: 'TRANSCRIPT_ERROR',
-        code: error instanceof SttError ? error.code : 'PROVIDER_ERROR',
-        message: error instanceof Error ? error.message : 'Transcription failed',
-      });
+      return;
     }
+
+    await loopStore.appendTurn(tabId, 'user', outcome.transcript);
+    await sendToTab(tabId, { type: 'LOOP_TRANSCRIPT', generation, transcript: outcome.transcript });
+    await sendToTab(tabId, {
+      type: 'LOOP_BRAIN_RESULT',
+      generation,
+      response: outcome.response.brainResponse,
+    });
+    await loopStore.appendTurn(
+      tabId,
+      'assistant',
+      summariseActions(outcome.response.brainResponse),
+    );
   },
   onOpenSettings: async () => {
     try {
@@ -102,9 +156,51 @@ const router = createMessageRouter({
   },
 });
 
+/** Loop messages from a tab: arm the generation, keep the page state fresh. */
+async function handleLoopMessage(
+  message: LoopToWorker,
+  sender: chrome.runtime.MessageSender,
+): Promise<{ ok: boolean; error?: string }> {
+  const tabId = sender.tab?.id;
+  if (tabId === undefined) return { ok: false, error: 'NO_TAB' };
+  switch (message.type) {
+    case 'LOOP_ARMED':
+      await loopStore.arm(tabId, message.generation, message.pageState);
+      return { ok: true };
+    case 'PAGE_STATE_UPDATED':
+      await loopStore.updatePageState(tabId, message.generation, message.pageState);
+      return { ok: true };
+    case 'LOOP_CANCELLED':
+      await loopStore.clear(tabId);
+      return { ok: true };
+    case 'EXECUTION_REPORT':
+      await loopStore.appendTurn(
+        tabId,
+        'assistant',
+        message.ok
+          ? `applied ${message.total} action(s)`
+          : `applied ${message.total - message.failedLabels.length} of ${message.total} action(s); failed: ${message.failedLabels.join(', ')}`,
+      );
+      return { ok: true };
+    default:
+      return { ok: false, error: 'UNKNOWN_MESSAGE' };
+  }
+}
+
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  const loop = parseLoopMessage(message);
+  if (loop.ok && sender.id === chrome.runtime.id) {
+    void handleLoopMessage(loop.value as LoopToWorker, sender).then(sendResponse);
+    return true;
+  }
   void router.handleMessage(message, sender).then(sendResponse);
   return true;
+});
+
+// A navigated tab starts a fresh page: drop the armed generation. The content
+// script is declarative, so it re-injects itself and re-arms on next activation.
+chrome.tabs.onUpdated.addListener((tabId, info) => {
+  if (info.status === 'complete') void loopStore.clear(tabId);
 });
 
 registerCommands(chrome.commands, () => {

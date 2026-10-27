@@ -1,24 +1,23 @@
-import { distillPage, watchPage } from '@vfe/dom-engine';
+import { distillPage, executeActions, watchPage } from '@vfe/dom-engine';
 
+import { createLoopDriver } from '../loop/driver';
 import { AssistantMessageSchema, parseAudioEvent } from '../messaging';
 
 import { mountBadges } from './badges/mount';
 import { mountHud, type HudEvent } from './hud/mount';
 
-let listening = false;
-
 const hud = mountHud({
   onEvent: (event: HudEvent) => {
     switch (event.type) {
       case 'hud:toggle':
-        void chrome.runtime.sendMessage({ type: listening ? 'AUDIO_STOP' : 'AUDIO_START' });
+        loop.activate();
         break;
       case 'hud:stop':
-        void chrome.runtime.sendMessage({ type: 'AUDIO_STOP' });
+        loop.stop();
         break;
       case 'hud:retry':
       case 'hud:relisten':
-        void chrome.runtime.sendMessage({ type: 'AUDIO_START' });
+        loop.activate();
         break;
       case 'hud:openSettings':
         void chrome.runtime.sendMessage({ type: 'OPEN_SETTINGS' });
@@ -27,93 +26,76 @@ const hud = mountHud({
   },
 });
 
-chrome.runtime.onMessage.addListener((message: unknown, sender) => {
-  if (sender.id !== chrome.runtime.id) return;
+const badges = mountBadges();
 
-  const event = parseAudioEvent(message);
-  if (event.ok) {
-    switch (event.value.type) {
-      case 'LISTENING_STATE':
-        listening = event.value.listening;
-        hud.setStatus(event.value.listening ? 'listening' : 'idle');
-        break;
-      case 'VAD_SPEECH_START':
-        hud.setStatus('listening');
-        break;
-      case 'VAD_SPEECH_END':
-        hud.setStatus('thinking');
-        break;
-      case 'AUDIO_ERROR':
-        hud.setStatus('error');
-        hud.setMessage(event.value.message, 'error');
-        if (event.value.code === 'NOT_ALLOWED') hud.setMicPermission('denied');
-        break;
-      default:
-        break;
-    }
-    return;
-  }
-
-  const assistant = AssistantMessageSchema.safeParse(message);
-  if (!assistant.success) return;
-  switch (assistant.data.type) {
-    case 'TRANSCRIPT_READY':
-      hud.setTranscript(assistant.data.transcript);
-      hud.setStatus('thinking');
-      break;
-    case 'TRANSCRIPT_ERROR':
-      hud.setStatus('error');
-      hud.setMessage(assistant.data.message, 'error');
-      break;
-    case 'STT_METRICS':
-      // Debug metrics arrive here; INT-1 renders them in the HUD debug panel.
-      break;
-  }
-});
-
-const HINT_DOMAIN_KEY = 'vfeHintDomains';
-const SESSION_COUNT_KEY = 'vfeSessionCount';
-const HINT_AFTER_SESSIONS = 3;
-
-/**
- * Onboarding nudge: only once the user has seen the pill a few times, and only
- * once per domain, so a frequently visited site never nags twice.
- */
-async function maybeShowOnboardingHint(): Promise<void> {
-  if (globalThis.top !== globalThis.self) return;
+/** One message channel to the service worker; a dead tab must never throw. */
+function send(message: unknown): Promise<unknown> | void {
   try {
-    const stored = await chrome.storage.local.get([HINT_DOMAIN_KEY, SESSION_COUNT_KEY]);
-    const domains = Array.isArray(stored[HINT_DOMAIN_KEY])
-      ? (stored[HINT_DOMAIN_KEY] as string[])
-      : [];
-    const sessions =
-      typeof stored[SESSION_COUNT_KEY] === 'number' ? (stored[SESSION_COUNT_KEY] as number) : 0;
-    const domain = globalThis.location?.hostname ?? '';
-    await chrome.storage.local.set({ [SESSION_COUNT_KEY]: sessions + 1 });
-    if (!domain || sessions < HINT_AFTER_SESSIONS || domains.includes(domain)) return;
-    await chrome.storage.local.set({ [HINT_DOMAIN_KEY]: [...domains, domain].slice(-50) });
-    hud.showHint('Press Alt+V to talk', 4000);
+    return chrome.runtime.sendMessage(message);
   } catch {
-    // Storage can be unavailable in private mode; the hint is optional.
+    return undefined;
   }
 }
 
-void maybeShowOnboardingHint();
+const loop = createLoopDriver({
+  hud,
+  badges,
+  distill: () => distillPage({ maxElements: 250 }),
+  send,
+  execute: (actions, options) => executeActions(actions, options),
+  speak: (text) => send({ type: 'TTS_SPEAK', text }),
+  stopSpeaking: () => {
+    void send({ type: 'TTS_STOP' });
+  },
+  labelOf: (targetId) => {
+    const el = document.querySelector(`[data-vfe-id="${targetId}"]`);
+    return (
+      el?.getAttribute('aria-label') ??
+      el?.closest('label')?.textContent?.trim() ??
+      el?.getAttribute('name') ??
+      undefined
+    );
+  },
+});
 
-/**
- * E-2 badge overlay. Distillation is deferred to idle time because a page with
- * hundreds of controls would otherwise compete with first paint; the watcher
- * then keeps numbers glued to re-rendered fields.
- */
-function startBadges(): void {
-  if (!document.querySelector('input, select, textarea, [contenteditable="true"]')) return;
-  const badges = mountBadges();
+/** Badges follow the page; the driver keeps the worker's copy fresh. */
+function startBadgeSync(): void {
   badges.sync(distillPage());
-  watchPage((change) => badges.sync(change.pageState), { observerDebounceMs: 300 }).start();
+  watchPage((change) => {
+    const generation = loop.getGeneration();
+    badges.sync(change.pageState);
+    if (generation > 0) {
+      void send({ type: 'PAGE_STATE_UPDATED', generation, pageState: change.pageState });
+    }
+  }).start();
 }
 
 const idleCallback =
   (globalThis as unknown as { requestIdleCallback?: (callback: () => void) => void })
     .requestIdleCallback ?? ((callback: () => void) => setTimeout(callback, 200));
 
-idleCallback(startBadges);
+idleCallback(startBadgeSync);
+
+chrome.runtime.onMessage.addListener((message: unknown, sender) => {
+  if (sender.id !== chrome.runtime.id) return;
+
+  // The driver owns status and errors for the loop messages.
+  if (loop.handleMessage(message)) return;
+
+  const audio = parseAudioEvent(message);
+  if (audio.ok && audio.value.type === 'AUDIO_ERROR') {
+    loop.handleAudioError(audio.value.code, audio.value.message);
+    return;
+  }
+
+  const assistant = AssistantMessageSchema.safeParse(message);
+  if (assistant.success && assistant.data.type === 'TRANSCRIPT_ERROR') {
+    hud.setMessage(assistant.data.message, 'error');
+  }
+});
+
+// A page that unloads mid-loop must not leave a zombie generation behind.
+globalThis.addEventListener('pagehide', () => {
+  void send({ type: 'LOOP_CANCELLED', generation: loop.getGeneration() });
+  loop.destroy();
+});
